@@ -127,10 +127,15 @@
   <button id="back-btn" onclick="window.close()">關閉視窗</button>
 
 <script>
-const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+let history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+
+// ✅ 按時間排序（最新在最上面）
+history.sort((a, b) => new Date(b.time) - new Date(a.time));
+
 const tbody = document.querySelector("#history-table tbody");
 const searchInput = document.getElementById("search");
 
+// 初始化顯示
 renderTable(history);
 
 // 🔍 搜尋功能
@@ -192,6 +197,10 @@ document.getElementById("export-btn").addEventListener("click", () => {
   a.click();
   document.body.removeChild(a);
 });
+</script>
+</body>
+</html>
+
 </script>
 </body>
 </html>

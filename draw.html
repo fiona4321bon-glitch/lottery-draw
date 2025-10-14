@@ -89,7 +89,7 @@ const prizes = [
   "便利貼一個",
   "多肉植物一盆",
   "紋身貼紙一張",
-  "鉛筆盒一個",
+  "鉛筆盒一個(ins風)",
   "鹿角蕨一株",
   "花盆一個",
   "迷迭香盆栽一個",
@@ -97,14 +97,23 @@ const prizes = [
   "娃娃一個"
 ];
 
-const btn = document.getElementById("start");
-const result = document.getElementById("result");
-const sfx = document.getElementById("sfx");
+// 🔐 老師後台帳號密碼設定
+const ADMIN_USER = "scienceA";
+const ADMIN_PASS = "089322047";
 
-btn.addEventListener("click", () => {
+document.getElementById("start").addEventListener("click", () => {
   const className = document.getElementById("class").value.trim();
   const seat = document.getElementById("seat").value.trim();
+  const result = document.getElementById("result");
+  const sfx = document.getElementById("sfx");
 
+  // 🧑‍🏫 檢查是否為老師登入
+  if (className === ADMIN_USER && seat === ADMIN_PASS) {
+    window.open("admin.html", "_blank");
+    return;
+  }
+
+  // 學生抽獎
   if (!className || !seat) {
     alert("請輸入班級與座號！");
     return;
@@ -114,13 +123,11 @@ btn.addEventListener("click", () => {
   sfx.currentTime = 0;
   sfx.play();
 
-  // 隨機抽出獎品
+  // 隨機抽獎
   const prize = prizes[Math.floor(Math.random() * prizes.length)];
-
-  // 顯示結果
   result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize}！`;
 
-  // 儲存抽獎紀錄
+  // 儲存紀錄
   const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
   history.push({
     className,
@@ -133,4 +140,3 @@ btn.addEventListener("click", () => {
 </script>
 </body>
 </html>
-

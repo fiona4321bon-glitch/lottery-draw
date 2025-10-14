@@ -62,11 +62,13 @@
     font-size: 22px;
     color: #facc15;
   }
-  #home-btn {
-    margin-top: 30px;
+  #home-btn, #admin-btn {
+    margin-top: 20px;
     background-color: #64748b;
     color: white;
+    font-size: 18px;
   }
+  #admin-btn:hover { background-color: #475569; }
 </style>
 </head>
 <body>
@@ -77,6 +79,7 @@
     <button id="start">開始抽獎</button>
     <div id="result"></div>
     <button id="home-btn" onclick="location.href='index.html'">返回首頁</button>
+    <button id="admin-btn">管理者登入</button>
   </div>
 
   <audio id="sfx" src="spin.mp3" preload="auto"></audio>
@@ -97,37 +100,23 @@ const prizes = [
   "娃娃一個"
 ];
 
-// 🔐 老師後台帳號密碼設定
-const ADMIN_USER = "scienceA";
-const ADMIN_PASS = "089322047";
-
 document.getElementById("start").addEventListener("click", () => {
   const className = document.getElementById("class").value.trim();
   const seat = document.getElementById("seat").value.trim();
   const result = document.getElementById("result");
   const sfx = document.getElementById("sfx");
 
-  // 🧑‍🏫 檢查是否為老師登入
-  if (className === ADMIN_USER && seat === ADMIN_PASS) {
-    window.open("admin.html", "_blank");
-    return;
-  }
-
-  // 學生抽獎
   if (!className || !seat) {
     alert("請輸入班級與座號！");
     return;
   }
 
-  // 播放音效
   sfx.currentTime = 0;
   sfx.play();
 
-  // 隨機抽獎
   const prize = prizes[Math.floor(Math.random() * prizes.length)];
   result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize}！`;
 
-  // 儲存紀錄
   const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
   history.push({
     className,
@@ -137,6 +126,17 @@ document.getElementById("start").addEventListener("click", () => {
   });
   localStorage.setItem("drawHistory", JSON.stringify(history));
 });
+
+// 🧑‍🏫 管理者登入按鈕
+document.getElementById("admin-btn").addEventListener("click", () => {
+  const pass = prompt("請輸入管理者密碼：");
+  if (pass === "505") { // ← 你可自行修改密碼
+    window.open("admin.html", "_blank");
+  } else if (pass) {
+    alert("密碼錯誤！");
+  }
+});
 </script>
 </body>
 </html>
+

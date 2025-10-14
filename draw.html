@@ -101,7 +101,10 @@ const prizes = [
   "娃娃一個"
 ];
 
-// ✅ 學生抽獎按鈕
+// ✅ Google Script 網址
+const scriptURL = "https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec"; // ← 這裡換成你的 Google Apps Script 網址！
+
+// ✅ 學生抽獎
 document.getElementById("start").addEventListener("click", () => {
   const className = document.getElementById("class").value.trim();
   const seat = document.getElementById("seat").value.trim();
@@ -113,26 +116,28 @@ document.getElementById("start").addEventListener("click", () => {
     return;
   }
 
-  // 播放音效
   sfx.currentTime = 0;
   sfx.play();
 
-  // 抽出隨機獎品
   const prize = prizes[Math.floor(Math.random() * prizes.length)];
   result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize}！`;
 
-  // 儲存紀錄
+  const record = { className, seat, prize, time: new Date().toLocaleString() };
+
+  // ✅ 儲存至本地
   const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
-  history.push({
-    className,
-    seat,
-    prize,
-    time: new Date().toLocaleString()
-  });
+  history.push(record);
   localStorage.setItem("drawHistory", JSON.stringify(history));
+
+  // ✅ 同步上傳至 Google 試算表
+  fetch(scriptURL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify(record)
+  });
 });
 
-// ✅ 管理者登入按鈕
+// ✅ 管理者登入
 document.getElementById("admin-btn").addEventListener("click", () => {
   const user = prompt("【教師專用】請輸入帳號：");
   const pass = prompt("請輸入密碼：");

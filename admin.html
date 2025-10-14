@@ -34,16 +34,24 @@
     cursor: pointer;
     color: #0f172a;
     font-weight: bold;
+    margin: 5px;
   }
 
-  button:hover { background-color: #16a34a; }
+  button:hover { opacity: 0.9; }
 
   #export-btn {
     background-color: #38bdf8;
     color: #0f172a;
-    margin-left: 10px;
   }
-  #export-btn:hover { background-color: #0ea5e9; }
+
+  #clear-history {
+    background-color: #ef4444;
+    color: white;
+  }
+
+  #clear-history:hover {
+    background-color: #dc2626;
+  }
 
   table {
     border-collapse: collapse;
@@ -63,7 +71,7 @@
   th {
     background: #334155;
     color: #facc15;
-    position: sticky; /* ✅ 固定標題列 */
+    position: sticky;
     top: 0;
     z-index: 2;
   }
@@ -76,7 +84,6 @@
     text-decoration: underline;
   }
 
-  /* ✅ 可滑動容器 */
   #table-wrapper {
     max-height: 70vh;
     overflow-y: auto;
@@ -86,7 +93,6 @@
     scrollbar-color: rgba(255,255,255,0.4) transparent;
   }
 
-  /* ✅ Chrome 美化滑輪 */
   #table-wrapper::-webkit-scrollbar { width: 8px; }
   #table-wrapper::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,0.4);
@@ -109,6 +115,7 @@
   <input type="text" id="search" placeholder="搜尋班級或座號...">
   <button id="clear">顯示全部</button>
   <button id="export-btn">匯出 Excel（CSV）</button>
+  <button id="clear-history">🧹 清除全部紀錄</button>
 
   <div id="table-wrapper">
     <table id="history-table">
@@ -129,7 +136,7 @@
 <script>
 let history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
 
-// ✅ 按時間排序（最新在最上面）
+// ✅ 按時間排序（最新在最上）
 history.sort((a, b) => new Date(b.time) - new Date(a.time));
 
 const tbody = document.querySelector("#history-table tbody");
@@ -158,7 +165,7 @@ document.getElementById("clear").addEventListener("click", () => {
 
 // 📋 生成表格
 function renderTable(data) {
-  tbody.innerHTML = data.map((h, index) => `
+  tbody.innerHTML = data.map((h) => `
     <tr>
       <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.className}</td>
       <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.seat}</td>
@@ -197,10 +204,16 @@ document.getElementById("export-btn").addEventListener("click", () => {
   a.click();
   document.body.removeChild(a);
 });
+
+// 🧹 清除所有紀錄
+document.getElementById("clear-history").addEventListener("click", () => {
+  if (confirm("⚠️ 確定要刪除所有抽獎紀錄嗎？此動作無法復原！")) {
+    localStorage.removeItem("drawHistory");
+    alert("✅ 所有抽獎紀錄已清除！");
+    location.reload();
+  }
+});
 </script>
 </body>
 </html>
 
-</script>
-</body>
-</html>

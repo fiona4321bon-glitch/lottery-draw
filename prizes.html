@@ -3,145 +3,200 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>獎品清單</title>
+<title>開始抽獎</title>
 <style>
-  /* ==== 背景樣式 ==== */
   body {
-    background: url("cover.jpg") center/cover no-repeat fixed; /* ✅ 背景圖片檔名 */
+    background: url("cover.jpg") center/cover no-repeat fixed;
     font-family: "Microsoft JhengHei", sans-serif;
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
     margin: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding-top: 60px;
+    justify-content: center;
     position: relative;
-    overflow: hidden;
   }
-
-  /* 半透明遮罩 */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0,0,0,0.45);
     z-index: 0;
   }
-
-  /* 主要內容區 */
-  #container {
-  position: relative;
-  z-index: 2;
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;       /* ✅ 限制容器高度為視窗 80% */
-  overflow-y: auto;       /* ✅ 超出時自動出現垂直滑輪 */
-  background: rgba(255,255,255,0.15);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.3);
-  padding: 25px 20px 80px;
-  backdrop-filter: blur(8px);
-  animation: fadeIn 0.8s ease;
-  scrollbar-width: thin;          /* ✅（Firefox）細滑輪 */
-  scrollbar-color: rgba(255,255,255,0.5) transparent;
-}
-
-/* ✅ Chrome 專用滑輪美化 */
-#container::-webkit-scrollbar {
-  width: 8px;
-}
-#container::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.5);
-  border-radius: 4px;
-}
-#container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.7);
-}
-
-  h1 {
-    font-size: 34px;
-    color: #facc15;
+  #app {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(6px);
     text-align: center;
-    margin-bottom: 20px;
+    width: 90%;
+    max-width: 400px;
   }
-
-  .item {
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    padding: 10px 0;
-    font-size: 20px;
-    letter-spacing: 1px;
-  }
-  .item:last-child { border-bottom: none; }
-
-  /* 浮動回首頁按鈕 */
-  #home-btn {
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(36, 189, 99, 0.9);
-    color: #fff;
-    padding: 12px 26px;
+  input {
+    padding: 10px;
+    border-radius: 6px;
     border: none;
-    border-radius: 50px;
+    width: 80%;
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  button {
+    background-color: #22c55e;
+    border: none;
+    color: #0b1022;
+    padding: 12px 24px;
+    border-radius: 10px;
     font-size: 20px;
-    cursor: pointer;
     font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    transition: background-color 0.3s, transform 0.2s;
-    z-index: 3;
+    cursor: pointer;
+    margin-top: 10px;
   }
-  #home-btn:hover {
-    background-color: rgba(22,163,74,1);
-    transform: translateX(-50%) scale(1.05);
+  button:hover { background-color: #16a34a; }
+  #result {
+    margin-top: 20px;
+    font-size: 22px;
+    color: #facc15;
   }
+  #home-btn, #admin-btn {
+    margin-top: 20px;
+    background-color: #64748b;
+    color: white;
+    font-size: 18px;
+  }
+  #admin-btn:hover { background-color: #475569; }
 
-  /* 動畫效果 */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* ✅ 彈出大圖樣式 */
+  #popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #popup img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.6);
+  }
+  #popup p {
+    margin-top: 15px;
+    font-size: 26px;
+    color: #facc15;
+    text-shadow: 0 2px 10px #000;
   }
 </style>
 </head>
 <body>
-  <div id="container">
-    <h1>🎉 獎品清單 🎉</h1>
-    <div id="prize-list"></div>
+  <div id="app">
+    <h1>🎯 開始抽獎 🎯</h1>
+    <input type="text" id="class" placeholder="請輸入班級 (例如：505)">
+    <input type="text" id="seat" placeholder="請輸入座號 (例如：06)">
+    <button id="start">開始抽獎</button>
+    <div id="result"></div>
+    <button id="home-btn" onclick="location.href='index.html'">返回首頁</button>
+    <button id="admin-btn">管理者登入</button>
   </div>
-  <button id="home-btn" onclick="location.href='index.html'">返回首頁</button>
+
+  <div id="popup" onclick="closePopup()">
+    <div>
+      <img id="prize-image" src="" alt="獎品圖片">
+      <p id="prize-name"></p>
+    </div>
+  </div>
+
+  <audio id="sfx" src="spin.mp3" preload="auto"></audio>
 
 <script>
+// 🎁 獎品與機率設定
 const prizes = [
-  "巨大橡皮擦一顆",
-  "自動鉛筆一枝",
-  "豆豆貼一個",
-  "便利貼一個",
-  "多肉植物一盆",
-  "紋身貼紙一張",
-  "鉛筆盒一個",
-  "鹿角蕨一株",
-  "花盆一個",
-  "迷迭香盆栽一個",
-  "謝謝惠顧",
-  "捏捏樂一個",
-  "娃娃一個"
+  { name: "巨大橡皮擦一顆", prob: 6.2, img: "eraser.jpg" },
+  { name: "娃娃一個", prob: 13.3, img: "doll.jpg" },
+  { name: "豆豆貼一個", prob: 6.2, img: "dot.jpg" },
+  { name: "花盆一個", prob: 6.2, img: "flowerpot.jpg" },
+  { name: "便利貼一個", prob: 13.3, img: "postit.jpg" },
+  { name: "鉛筆盒一個", prob: 2.2, img: "pencilcase.jpg" },
+  { name: "捏捏樂一個", prob: 2.2, img: "stressball.jpg" },
+  { name: "自動鉛筆一枝", prob: 37.5, img: "pencil.jpg" },
+  { name: "多肉植物一盆", prob: 17.4, img: "succulent.jpg" },
+  { name: "紋身貼紙一張", prob: 68.9, img: "tattoo.jpg" },
+  { name: "鹿角蕨一株", prob: 0.8, img: "fern.jpg" },
+  { name: "迷迭香盆栽一個", prob: 8.6, img: "rosemary.jpg" },
+  { name: "謝謝惠顧", prob: 1.3, img: "thanks.jpg" }
 ];
 
-// 🔢 依「字數」排序（短字在前）
-const sorted = prizes.sort((a,b) => a.length - b.length);
+// 🎲 抽獎演算法
+function weightedRandom() {
+  const total = prizes.reduce((sum, p) => sum + p.prob, 0);
+  const r = Math.random() * total;
+  let acc = 0;
+  for (const p of prizes) {
+    acc += p.prob;
+    if (r <= acc) return p;
+  }
+  return prizes[prizes.length - 1];
+}
 
-const list = document.getElementById("prize-list");
+// 🎬 顯示獎品大圖
+function showPopup(prize) {
+  const popup = document.getElementById("popup");
+  const img = document.getElementById("prize-image");
+  const text = document.getElementById("prize-name");
 
-// 自動補 0 的編號格式
-list.innerHTML = sorted
-  .map((p, i) => {
-    const number = (i + 1).toString().padStart(2, "0");
-    return `<div class="item">${number}. ${p}</div>`;
-  })
-  .join("");
+  img.src = prize.img ? prize.img : "noimage.jpg";
+  text.textContent = prize.name;
+
+  popup.style.display = "flex";
+}
+
+// ❌ 關閉彈窗
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+// 🧒 學生抽獎
+document.getElementById("start").addEventListener("click", () => {
+  const className = document.getElementById("class").value.trim();
+  const seat = document.getElementById("seat").value.trim();
+  const sfx = document.getElementById("sfx");
+  const result = document.getElementById("result");
+
+  if (!className || !seat) {
+    alert("請輸入班級與座號！");
+    return;
+  }
+
+  sfx.currentTime = 0;
+  sfx.play();
+
+  const prize = weightedRandom();
+  result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize.name}！`;
+  showPopup(prize);
+
+  const record = { className, seat, prize: prize.name, time: new Date().toLocaleString() };
+  const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+  history.push(record);
+  localStorage.setItem("drawHistory", JSON.stringify(history));
+});
+
+// 🔐 管理者登入
+document.getElementById("admin-btn").addEventListener("click", () => {
+  const user = prompt("【教師專用】請輸入帳號：");
+  const pass = prompt("請輸入密碼：");
+  if (user === "scienceA" && pass === "089322047") {
+    window.open("admin.html", "_blank");
+  } else if (user || pass) {
+    alert("帳號或密碼錯誤！");
+  }
+});
 </script>
 </body>
 </html>

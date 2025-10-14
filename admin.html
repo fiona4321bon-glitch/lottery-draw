@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>抽獎紀錄後台</title>
+<style>
+  body {
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: "Microsoft JhengHei", sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+  input {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    margin: 6px;
+    font-size: 18px;
+  }
+  button {
+    padding: 10px 20px;
+    background-color: #22c55e;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 30px auto;
+    width: 90%;
+    max-width: 700px;
+  }
+  th, td {
+    border: 1px solid #334155;
+    padding: 8px;
+  }
+  th { background: #1e293b; }
+  tr:nth-child(even) { background: #0f172a; }
+</style>
+</head>
+<body>
+  <h1>🔐 管理者登入</h1>
+  <div id="login">
+    <input type="text" id="user" placeholder="帳號"><br>
+    <input type="password" id="pass" placeholder="密碼"><br>
+    <button id="login-btn">登入</button>
+  </div>
+  <div id="records" style="display:none;">
+    <h2>📜 抽獎紀錄</h2>
+    <table id="history-table">
+      <thead><tr><th>班級</th><th>座號</th><th>獎品</th><th>時間</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+const ADMIN_USER = "scienceA";
+const ADMIN_PASS = "089322047";  // ✅ 你可以改成自己的密碼
+
+document.getElementById("login-btn").addEventListener("click", () => {
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
+
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("records").style.display = "block";
+    loadHistory();
+  } else {
+    alert("帳號或密碼錯誤！");
+  }
+});
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+  const tbody = document.querySelector("#history-table tbody");
+  tbody.innerHTML = history.map(h =>
+    `<tr><td>${h.className}</td><td>${h.seat}</td><td>${h.prize}</td><td>${h.time}</td></tr>`
+  ).join("");
+}
+</script>
+</body>
+</html>

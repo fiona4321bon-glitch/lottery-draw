@@ -1,106 +1,134 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>自然課抽獎機</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0b1022, #101530);
-      color: #f3f4f6;
-      font-family: "Microsoft JhengHei", sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      font-size: 28px;
-      color: #22c55e;
-      margin-bottom: 20px;
-    }
-    #prize-list {
-      margin: 20px auto;
-      width: 90%;
-      max-width: 600px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: left;
-    }
-    .item {
-      padding: 8px 12px;
-      border-bottom: 1px solid #1f2937;
-      font-size: 18px;
-    }
-    .item:last-child { border-bottom: none; }
-    button {
-      background-color: #22c55e;
-      border: none;
-      color: #0b1022;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-    button:hover { background-color: #16a34a; }
-    #result {
-      margin-top: 30px;
-      font-size: 26px;
-      font-weight: bold;
-      color: #facc15;
-      min-height: 40px;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教室抽獎系統</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #0b1022, #101530);
+    color: #f3f4f6;
+    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  h1 {
+    font-size: 32px;
+    color: #22c55e;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  button {
+    background-color: #22c55e;
+    border: none;
+    color: #0b1022;
+    padding: 16px 32px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 12px;
+    transition: 0.2s;
+  }
+  button:hover { background-color: #16a34a; }
+  #prize-list {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .item {
+    border-bottom: 1px solid #1f2937;
+    padding: 10px;
+    font-size: 18px;
+  }
+  .item:last-child { border-bottom: none; }
+  #back-btn {
+    background-color: #64748b;
+    color: #fff;
+    margin-top: 20px;
+  }
+  #app section {
+    display: none;
+    text-align: center;
+  }
+  #app section.active {
+    display: block;
+  }
+</style>
 </head>
 <body>
-  <h1>🎁 自然課抽獎機 🎁</h1>
-  <p>獎項清單：</p>
-  <div id="prize-list"></div>
+  <div id="app">
+    <!-- 首頁 -->
+    <section id="home" class="active">
+      <h1>🎁 教室抽獎系統 🎁</h1>
+      <button id="show-prizes-btn">查看獎品</button>
+      <button id="draw-btn" disabled>開始抽獎（未開放）</button>
+    </section>
 
-  <button id="draw-btn">開始抽獎</button>
-  <div id="result"></div>
+    <!-- 獎品清單頁 -->
+    <section id="prizes">
+      <h1>🎉 獎品清單 🎉</h1>
+      <div id="prize-list"></div>
+      <button id="back-btn">返回首頁</button>
+    </section>
+  </div>
 
-  <audio id="sfx-spin" src="spin.mp3" preload="auto"></audio>
+<script>
+  const prizes = [
+    "巨大橡皮擦一顆",
+    "自動鉛筆一枝",
+    "豆豆貼一個",
+    "便利貼一個",
+    "多肉植物一盆",
+    "紋身貼紙一張",
+    "鉛筆盒一個(ins風)",
+    "鹿角蕨一株",
+    "花盆一個",
+    "迷迭香盆栽一個",
+    "捏捏樂一個",
+    "娃娃一個"
+  ];
 
-  <script>
-    const prizes = [
-      "巨大橡皮擦一顆",
-      "自動鉛筆一枝",
-      "豆豆貼一個",
-      "便利貼一個",
-      "多肉植物一盆",
-      "紋身貼紙一張",
-      "鉛筆盒一個(ins風)",
-      "鹿角蕨一株",
-      "花盆一個",
-      "迷迭香盆栽一個",
-      "捏捏樂一個",
-      "娃娃一個"
-    ];
+  const app = document.getElementById("app");
+  const homePage = document.getElementById("home");
+  const prizePage = document.getElementById("prizes");
+  const prizeList = document.getElementById("prize-list");
 
-    const list = document.getElementById("prize-list");
-    const result = document.getElementById("result");
-    const spin = document.getElementById("sfx-spin");
+  // 顯示獎品清單
+  document.getElementById("show-prizes-btn").addEventListener("click", () => {
+    showPage("prizes");
+    renderPrizes();
+  });
 
-    // 顯示獎項
-    prizes.forEach((name, i) => {
+  // 返回首頁
+  document.getElementById("back-btn").addEventListener("click", () => {
+    showPage("home");
+  });
+
+  function renderPrizes() {
+    prizeList.innerHTML = "";
+    prizes.forEach((p, i) => {
       const div = document.createElement("div");
       div.className = "item";
-      div.textContent = `${i + 1}. ${name}`;
-      list.appendChild(div);
+      div.textContent = `${i + 1}. ${p}`;
+      prizeList.appendChild(div);
     });
+  }
 
-    // 抽獎邏輯（平均機率）
-    document.getElementById("draw-btn").addEventListener("click", () => {
-      result.textContent = "抽選中…";
-      spin.play().catch(() => {}); // 播放抽獎音效（若沒檔案不報錯）
-      setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * prizes.length);
-        result.textContent = `🎉 恭喜抽中：${prizes[randomIndex]}！`;
-      }, 2000);
-    });
-  </script>
+  function showPage(page) {
+    homePage.classList.remove("active");
+    prizePage.classList.remove("active");
+    if (page === "home") homePage.classList.add("active");
+    else if (page === "prizes") prizePage.classList.add("active");
+  }
+</script>
 </body>
 </html>

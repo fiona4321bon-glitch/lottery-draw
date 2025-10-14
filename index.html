@@ -5,23 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>教室抽獎系統</title>
 <style>
+  /* === 背景與版面 === */
   body {
-  background: url("cover.jpg") center/cover no-repeat fixed;
-  color: #f3f4f6;
-  font-family: "Microsoft JhengHei", sans-serif;
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    position: relative;
+    background: url("cover.jpg") center/cover no-repeat fixed; /* ←這裡改成你的圖片檔名 */
+    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
-  h1 {
-    font-size: 32px;
-    color: #22c55e;
-    margin-bottom: 40px;
+
+  /* 半透明黑色遮罩，讓亮底圖片不搶字 */
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45); /* 越大越暗，可自行調整 0.3~0.6 */
+    z-index: 0;
+  }
+
+  /* 內容層放上來 */
+  #app {
+    position: relative;
+    z-index: 1;
     text-align: center;
+    color: #f8fafc;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
   }
+
+  /* === 標題與按鈕 === */
+  h1 {
+    font-size: 36px;
+    color: #facc15;
+    margin-bottom: 40px;
+  }
+
   button {
     background-color: #22c55e;
     border: none;
@@ -34,33 +56,46 @@
     margin: 12px;
     transition: 0.2s;
   }
-  button:hover { background-color: #16a34a; }
-  #prize-list {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid #334155;
-    border-radius: 10px;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
-    margin: 0 auto;
+
+  button:hover {
+    background-color: #16a34a;
   }
-  .item {
-    border-bottom: 1px solid #1f2937;
-    padding: 10px;
-    font-size: 18px;
-  }
-  .item:last-child { border-bottom: none; }
+
   #back-btn {
     background-color: #64748b;
     color: #fff;
     margin-top: 20px;
   }
+
   #app section {
     display: none;
     text-align: center;
   }
+
   #app section.active {
     display: block;
+  }
+
+  /* === 獎品清單 === */
+  #prize-list {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    backdrop-filter: blur(5px);
+  }
+
+  .item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    font-size: 18px;
+  }
+
+  .item:last-child {
+    border-bottom: none;
   }
 </style>
 </head>
@@ -82,6 +117,7 @@
   </div>
 
 <script>
+  // === 獎品資料 ===
   const prizes = [
     "巨大橡皮擦一顆",
     "自動鉛筆一枝",
@@ -97,18 +133,18 @@
     "娃娃一個"
   ];
 
-  const app = document.getElementById("app");
+  // === DOM 物件 ===
   const homePage = document.getElementById("home");
   const prizePage = document.getElementById("prizes");
   const prizeList = document.getElementById("prize-list");
 
-  // 顯示獎品清單
+  // === 顯示獎品清單 ===
   document.getElementById("show-prizes-btn").addEventListener("click", () => {
     showPage("prizes");
     renderPrizes();
   });
 
-  // 返回首頁
+  // === 返回首頁 ===
   document.getElementById("back-btn").addEventListener("click", () => {
     showPage("home");
   });
@@ -132,3 +168,4 @@
 </script>
 </body>
 </html>
+

@@ -6,16 +6,17 @@
 <title>開始抽獎</title>
 <style>
   body {
-    background: url("f903c84f-3d46-436b-a321-04a9a5f6deeb.png") center/cover no-repeat fixed;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    height: 100vh;
+    background: url("cover.jpg") center/cover no-repeat fixed;
+    font-family: "Microsoft JhengHei", sans-serif;
     color: #fff;
     text-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
   body::before {
     content: "";
@@ -24,10 +25,25 @@
     background: rgba(0,0,0,0.45);
     z-index: 0;
   }
-  #content {
+  #app {
     position: relative;
     z-index: 1;
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(6px);
     text-align: center;
+    width: 90%;
+    max-width: 400px;
+  }
+  input {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    width: 80%;
+    margin: 10px 0;
+    font-size: 18px;
   }
   button {
     background-color: #22c55e;
@@ -38,14 +54,83 @@
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
+    margin-top: 10px;
+  }
+  button:hover { background-color: #16a34a; }
+  #result {
     margin-top: 20px;
+    font-size: 22px;
+    color: #facc15;
+  }
+  #home-btn {
+    margin-top: 30px;
+    background-color: #64748b;
+    color: white;
   }
 </style>
 </head>
 <body>
-<div id="content">
-  <h1>🎯 抽獎頁面建置中...</h1>
-  <button onclick="location.href='index.html'">返回首頁</button>
-</div>
+  <div id="app">
+    <h1>🎯 開始抽獎 🎯</h1>
+    <input type="text" id="class" placeholder="請輸入班級 (例如：505)">
+    <input type="text" id="seat" placeholder="請輸入座號 (例如：06)">
+    <button id="start">開始抽獎</button>
+    <div id="result"></div>
+    <button id="home-btn" onclick="location.href='index.html'">返回首頁</button>
+  </div>
+
+  <audio id="sfx" src="spin.mp3" preload="auto"></audio>
+
+<script>
+const prizes = [
+  "巨大橡皮擦一顆",
+  "自動鉛筆一枝",
+  "豆豆貼一個",
+  "便利貼一個",
+  "多肉植物一盆",
+  "紋身貼紙一張",
+  "鉛筆盒一個",
+  "鹿角蕨一株",
+  "花盆一個",
+  "迷迭香盆栽一個",
+  "捏捏樂一個",
+  "娃娃一個"
+];
+
+const btn = document.getElementById("start");
+const result = document.getElementById("result");
+const sfx = document.getElementById("sfx");
+
+btn.addEventListener("click", () => {
+  const className = document.getElementById("class").value.trim();
+  const seat = document.getElementById("seat").value.trim();
+
+  if (!className || !seat) {
+    alert("請輸入班級與座號！");
+    return;
+  }
+
+  // 播放音效
+  sfx.currentTime = 0;
+  sfx.play();
+
+  // 隨機抽出獎品
+  const prize = prizes[Math.floor(Math.random() * prizes.length)];
+
+  // 顯示結果
+  result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize}！`;
+
+  // 儲存抽獎紀錄
+  const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+  history.push({
+    className,
+    seat,
+    prize,
+    time: new Date().toLocaleString()
+  });
+  localStorage.setItem("drawHistory", JSON.stringify(history));
+});
+</script>
 </body>
 </html>
+

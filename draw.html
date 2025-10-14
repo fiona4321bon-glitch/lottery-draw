@@ -85,6 +85,7 @@
   <audio id="sfx" src="spin.mp3" preload="auto"></audio>
 
 <script>
+// ✅ 獎品清單
 const prizes = [
   "巨大橡皮擦一顆",
   "自動鉛筆一枝",
@@ -100,6 +101,7 @@ const prizes = [
   "娃娃一個"
 ];
 
+// ✅ 學生抽獎按鈕
 document.getElementById("start").addEventListener("click", () => {
   const className = document.getElementById("class").value.trim();
   const seat = document.getElementById("seat").value.trim();
@@ -111,12 +113,15 @@ document.getElementById("start").addEventListener("click", () => {
     return;
   }
 
+  // 播放音效
   sfx.currentTime = 0;
   sfx.play();
 
+  // 抽出隨機獎品
   const prize = prizes[Math.floor(Math.random() * prizes.length)];
   result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize}！`;
 
+  // 儲存紀錄
   const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
   history.push({
     className,
@@ -127,16 +132,16 @@ document.getElementById("start").addEventListener("click", () => {
   localStorage.setItem("drawHistory", JSON.stringify(history));
 });
 
-// 🧑‍🏫 管理者登入按鈕
+// ✅ 管理者登入按鈕
 document.getElementById("admin-btn").addEventListener("click", () => {
-  const pass = prompt("請輸入管理者密碼：");
-  if (pass === "505") { // ← 你可自行修改密碼
+  const user = prompt("【教師專用】請輸入帳號：");
+  const pass = prompt("請輸入密碼：");
+  if (user === "scienceA" && pass === "089322047") {
     window.open("admin.html", "_blank");
-  } else if (pass) {
-    alert("密碼錯誤！");
+  } else if (user || pass) {
+    alert("帳號或密碼錯誤！");
   }
 });
 </script>
 </body>
 </html>
-

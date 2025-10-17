@@ -2,122 +2,49 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>抽獎紀錄管理</title>
+<title>管理員登入</title>
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #111;
+    background: #222;
     color: #fff;
     text-align: center;
-    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  h1 { color: #ffcc00; }
   input, button {
-    padding: 8px 14px;
-    margin: 8px;
-    border-radius: 5px;
-    border: none;
-    font-size: 16px;
-  }
-  input { width: 120px; }
-  button { cursor: pointer; }
-  #records {
-    margin: 20px auto;
-    width: 90%;
-    max-width: 800px;
-    border-collapse: collapse;
-  }
-  #records th, #records td {
-    border-bottom: 1px solid #666;
+    margin: 10px;
     padding: 10px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: none;
   }
-  #records th { background-color: #222; color: #ffcc00; }
-  #records tr:hover { background-color: #333; }
-  #clearAll {
-    background-color: #e74c3c;
+  button {
+    background-color: #3498db;
     color: white;
-    font-weight: bold;
+    cursor: pointer;
   }
-  #clearAll:hover { background-color: #c0392b; }
+  button:hover { background-color: #2980b9; }
 </style>
 </head>
 <body>
-  <h1>🎁 抽獎紀錄管理系統 🎁</h1>
-
-  <div>
-    <input type="text" id="classSearch" placeholder="輸入班級">
-    <input type="text" id="seatSearch" placeholder="輸入座號">
-    <button onclick="filterRecords()">搜尋</button>
-    <button onclick="loadRecords()">重新載入</button>
-    <button id="clearAll" onclick="clearAllRecords()">清除全部紀錄</button>
-  </div>
-
-  <table id="records">
-    <thead>
-      <tr><th>班級</th><th>座號</th><th>獎品</th><th>時間</th></tr>
-    </thead>
-    <tbody id="recordBody"></tbody>
-  </table>
+  <h1>🔒 管理員登入</h1>
+  <input id="user" placeholder="帳號">
+  <input id="pass" type="password" placeholder="密碼">
+  <button onclick="login()">登入</button>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec";
-
-async function loadRecords() {
-  try {
-    const res = await fetch(scriptURL);
-    const data = await res.json();
-
-    if (!Array.isArray(data)) throw new Error("資料格式錯誤");
-
-    localStorage.setItem("lotteryRecords", JSON.stringify(data));
-    displayRecords(data);
-  } catch (error) {
-    alert("⚠️ 雲端讀取失敗，改用本機資料。");
-    const localData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
-    displayRecords(localData);
+function login() {
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
+  if (u === "scienceA" && p === "089322047") {
+    window.location.href = "records.html";
+  } else {
+    alert("帳號或密碼錯誤");
   }
 }
-
-function displayRecords(records) {
-  const tbody = document.getElementById("recordBody");
-  tbody.innerHTML = "";
-  records.forEach(r => {
-    const row = `<tr>
-      <td>${r.className || ""}</td>
-      <td>${r.seat || ""}</td>
-      <td>${r.prize || ""}</td>
-      <td>${r.time || ""}</td>
-    </tr>`;
-    tbody.insertAdjacentHTML("beforeend", row);
-  });
-}
-
-function filterRecords() {
-  const classSearch = document.getElementById("classSearch").value.trim();
-  const seatSearch = document.getElementById("seatSearch").value.trim();
-  const allData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
-
-  const filtered = allData.filter(r =>
-    (!classSearch || r.className == classSearch) &&
-    (!seatSearch || r.seat == seatSearch)
-  );
-  displayRecords(filtered);
-}
-
-async function clearAllRecords() {
-  if (!confirm("⚠️ 確定要刪除所有雲端紀錄？")) return;
-  try {
-    await fetch(scriptURL + "?action=clear", { method: "GET" });
-    alert("✅ 雲端紀錄已清空！");
-    localStorage.removeItem("lotteryRecords");
-    document.getElementById("recordBody").innerHTML = "";
-  } catch (e) {
-    alert("⚠️ 無法清除雲端紀錄。請稍後再試。");
-  }
-}
-
-loadRecords();
 </script>
 </body>
 </html>

@@ -41,7 +41,8 @@
 <script>
 let history = [];
 
-fetch("https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec")
+fetch("fetch("https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec")
+")
   .then(res => res.json())
   .then(data => {
     history = data.sort((a,b)=>new Date(b.time)-new Date(a.time));

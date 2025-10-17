@@ -6,34 +6,49 @@
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background: #222;
-    color: #fff;
-    text-align: center;
-    min-height: 100vh;
+    background: url("cover.jpg") center/cover no-repeat fixed;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
+    min-height: 100vh;
+    color: white;
+    text-shadow: 1px 1px 4px #000;
+  }
+  .box {
+    background: rgba(0,0,0,0.5);
+    border-radius: 20px;
+    padding: 40px 60px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
   }
   input, button {
-    margin: 10px;
-    padding: 10px;
     font-size: 18px;
-    border-radius: 8px;
+    margin: 10px;
+    padding: 10px 15px;
     border: none;
+    border-radius: 8px;
   }
   button {
-    background-color: #3498db;
+    background: linear-gradient(135deg, #3498db, #5dade2);
     color: white;
     cursor: pointer;
   }
-  button:hover { background-color: #2980b9; }
+  button:hover {
+    transform: scale(1.05);
+  }
 </style>
 </head>
+
 <body>
-  <h1>🔒 管理員登入</h1>
-  <input id="user" placeholder="帳號">
-  <input id="pass" type="password" placeholder="密碼">
-  <button onclick="login()">登入</button>
+  <div class="box">
+    <h2>🔒 管理員登入</h2>
+    <input id="user" placeholder="帳號">
+    <input id="pass" type="password" placeholder="密碼">
+    <br>
+    <button onclick="login()">登入</button>
+    <button onclick="window.location.href='index.html'">回首頁</button>
+  </div>
 
 <script>
 function login() {

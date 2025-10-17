@@ -1,161 +1,222 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>教室抽獎</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>開始抽獎</title>
 <style>
   body {
-    font-family: "Microsoft JhengHei", sans-serif;
     background: url("cover.jpg") center/cover no-repeat fixed;
+    font-family: "Microsoft JhengHei", sans-serif;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    margin: 0;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    color: white;
-    text-shadow: 1px 1px 3px #000;
+    position: relative;
   }
-  .container {
-    background: rgba(0,0,0,0.55);
-    padding: 40px 60px;
-    border-radius: 20px;
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+  }
+  #app {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(6px);
     text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-  h1 {
-    font-size: 40px;
-    color: #ffcc00;
-    margin-bottom: 30px;
-    text-shadow: 2px 2px 5px #000;
+    width: 90%;
+    max-width: 400px;
   }
   input {
-    padding: 10px 15px;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    width: 80%;
+    margin: 10px 0;
     font-size: 18px;
-    border-radius: 8px;
-    border: none;
-    margin: 8px;
-    width: 180px;
   }
-  .btn {
-    display: inline-block;
-    margin: 10px;
-    padding: 12px 28px;
+  button {
+    background-color: #22c55e;
+    border: none;
+    color: #0b1022;
+    padding: 12px 24px;
+    border-radius: 10px;
     font-size: 20px;
-    color: white;
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    border: none;
-    border-radius: 30px;
+    font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
+    margin-top: 10px;
   }
-  .btn:hover { transform: scale(1.05); }
+  button:hover { background-color: #16a34a; }
   #result {
-    font-size: 26px;
-    margin-top: 25px;
-  }
-  #prizeImage {
-    display: none;
-    width: 400px;
-    height: 400px;
-    object-fit: contain;
-    border-radius: 20px;
     margin-top: 20px;
-    box-shadow: 0 0 25px rgba(255,255,255,0.8);
+    font-size: 22px;
+    color: #facc15;
+  }
+  #home-btn, #admin-btn {
+    margin-top: 20px;
+    background-color: #64748b;
+    color: white;
+    font-size: 18px;
+  }
+  #admin-btn:hover { background-color: #475569; }
+
+  /* ✅ 彈出大圖樣式 */
+  #popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    flex-direction: column;
+    animation: fadeIn 0.5s ease;
+  }
+
+  #popup img {
+    width: 400px;         
+    height: 400px;        
+    object-fit: contain;  
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.1);
+    transform: scale(0.7);
+    opacity: 0;
+    animation: zoomIn 0.8s ease forwards;
+  }
+
+  #popup p {
+    margin-top: 15px;
+    font-size: 26px;
+    color: #facc15;
+    text-shadow: 0 2px 10px #000;
+    animation: fadeText 1s ease forwards;
+  }
+
+  @keyframes zoomIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes fadeText {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>🎁 教室抽獎系統 🎁</h1>
-    <div>
-      <input type="text" id="classInput" placeholder="班級(例:506)">
-      <input type="text" id="seatInput" placeholder="座號(例:12)">
-    </div>
-    <button class="btn" id="drawBtn">開始抽獎</button>
-    <button class="btn" onclick="window.location.href='index.html'">回首頁</button>
-
+  <div id="app">
+    <h1>🎯 開始抽獎 🎯</h1>
+    <input type="text" id="class" placeholder="請輸入班級 (例如：505)">
+    <input type="text" id="seat" placeholder="請輸入座號 (例如：06)">
+    <button id="start">開始抽獎</button>
     <div id="result"></div>
-    <img id="prizeImage" alt="獎項圖片">
-    <audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+    <button id="home-btn" onclick="location.href='index.html'">返回首頁</button>
+    <button id="admin-btn">管理者登入</button>
   </div>
 
+  <div id="popup" onclick="closePopup()">
+    <img id="prize-image" src="" alt="獎品圖片">
+    <p id="prize-name"></p>
+  </div>
+
+  <audio id="sfx" src="spin.mp3" preload="auto"></audio>
+
 <script>
+// 🎁 獎品與機率設定（非線性反比法）
 const prizes = [
-  { name: "鹿角蕨一株", weight: 1 },
-  { name: "捏捏樂一個", weight: 2 },
-  { name: "鉛筆盒一個", weight: 2 },
-  { name: "巨大橡皮擦一顆", weight: 3 },
-  { name: "豆豆貼一個", weight: 3 },
-  { name: "花盆一個", weight: 3 },
-  { name: "迷迭香盆栽一個", weight: 4 },
-  { name: "多肉植物一盆", weight: 5 },
-  { name: "便利貼一個", weight: 6 },
-  { name: "娃娃一個", weight: 6 },
-  { name: "自動鉛筆一枝", weight: 7 },
-  { name: "紋身貼紙一張", weight: 8 },
-  { name: "謝謝惠顧", weight: 2 }
+  { name: "巨大橡皮擦一顆", prob: 6.2, img: "eraser.jpg" },
+  { name: "娃娃一個", prob: 13.3, img: "doll.jpg" },
+  { name: "豆豆貼一個", prob: 6.2, img: "dot.jpg" },
+  { name: "花盆一個", prob: 6.2, img: "flowerpot.jpg" },
+  { name: "便利貼一個", prob: 13.3, img: "postit.jpg" },
+  { name: "鉛筆盒一個", prob: 2.2, img: "pencilcase.jpg" },
+  { name: "捏捏樂一個", prob: 2.2, img: "stressball.jpg" },
+  { name: "自動鉛筆一枝", prob: 37.5, img: "pencil.jpg" },
+  { name: "多肉植物一盆", prob: 17.4, img: "succulent.jpg" },
+  { name: "紋身貼紙一張", prob: 68.9, img: "tattoo.jpg" },
+  { name: "鹿角蕨一株", prob: 0.8, img: "fern.jpg" },
+  { name: "迷迭香盆栽一個", prob: 8.6, img: "rosemary.jpg" },
+  { name: "謝謝惠顧", prob: 1.3, img: "thanks.jpg" }
 ];
 
-const prizeImages = {
-  "鹿角蕨一株": "deerfern.jpg",
-  "捏捏樂一個": "stressball.jpg",
-  "鉛筆盒一個": "pencilcase.jpg",
-  "巨大橡皮擦一顆": "eraser.jpg",
-  "豆豆貼一個": "beadsticker.jpg",
-  "花盆一個": "flowerpot.jpg",
-  "迷迭香盆栽一個": "rosemary.jpg",
-  "多肉植物一盆": "succulent.jpg",
-  "便利貼一個": "postit.jpg",
-  "娃娃一個": "doll.jpg",
-  "自動鉛筆一枝": "pencil.jpg",
-  "紋身貼紙一張": "tattoo.jpg",
-  "謝謝惠顧": "thanks.jpg"
-};
-
-document.getElementById("drawBtn").addEventListener("click", startDraw);
-
-function weightedRandom(list) {
-  const total = list.reduce((sum, item) => sum + item.weight, 0);
-  let rand = Math.random() * total;
-  for (const item of list) {
-    rand -= item.weight;
-    if (rand <= 0) return item.name;
+// 🎲 抽獎演算法
+function weightedRandom() {
+  const total = prizes.reduce((sum, p) => sum + p.prob, 0);
+  const r = Math.random() * total;
+  let acc = 0;
+  for (const p of prizes) {
+    acc += p.prob;
+    if (r <= acc) return p;
   }
+  return prizes[prizes.length - 1];
 }
 
-function startDraw() {
-  const className = document.getElementById("classInput").value.trim();
-  const seat = document.getElementById("seatInput").value.trim();
-  const resultDiv = document.getElementById("result");
-  const img = document.getElementById("prizeImage");
-  const sound = document.getElementById("spinSound");
+// 🎬 顯示獎品大圖
+function showPopup(prize) {
+  const popup = document.getElementById("popup");
+  const img = document.getElementById("prize-image");
+  const text = document.getElementById("prize-name");
+
+  img.src = prize.img ? prize.img : "noimage.jpg";
+  text.textContent = prize.name;
+
+  popup.style.display = "flex";
+}
+
+// ❌ 關閉彈窗
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+// 🧒 學生抽獎
+document.getElementById("start").addEventListener("click", () => {
+  const className = document.getElementById("class").value.trim();
+  const seat = document.getElementById("seat").value.trim();
+  const sfx = document.getElementById("sfx");
+  const result = document.getElementById("result");
 
   if (!className || !seat) {
     alert("請輸入班級與座號！");
     return;
   }
 
-  // 播放抽獎音效
-  sound.currentTime = 0;
-  sound.play();
+  sfx.currentTime = 0;
+  sfx.play();
 
-  resultDiv.textContent = "🎲 抽獎中...";
-  img.style.display = "none";
+  const prize = weightedRandom();
+  result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize.name}！`;
+  showPopup(prize);
 
-  setTimeout(() => {
-    const prize = weightedRandom(prizes);
-    resultDiv.textContent = `🎉 恭喜 ${className} 班 ${seat} 號 抽中：${prize}`;
+  const record = { className, seat, prize: prize.name, time: new Date().toLocaleString() };
+  const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+  history.push(record);
+  localStorage.setItem("drawHistory", JSON.stringify(history));
+});
 
-    if (prizeImages[prize]) {
-      img.src = prizeImages[prize];
-      img.style.display = "block";
-    } else {
-      img.style.display = "none";
-    }
-  }, 2000);
-}
+// 🔐 管理者登入
+document.getElementById("admin-btn").addEventListener("click", () => {
+  const user = prompt("【教師專用】請輸入帳號：");
+  const pass = prompt("請輸入密碼：");
+  if (user === "scienceA" && pass === "089322047") {
+    window.open("admin.html", "_blank");
+  } else if (user || pass) {
+    alert("帳號或密碼錯誤！");
+  }
+});
 </script>
 </body>
 </html>
-

@@ -1,104 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>抽獎紀錄後台</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抽獎紀錄管理</title>
 <style>
-  body { background:#0f172a;color:#f8fafc;font-family:"Microsoft JhengHei",sans-serif;text-align:center;padding:30px;margin:0;}
-  h1 { color:#facc15;margin-bottom:10px; }
-  input { padding:8px;border-radius:6px;border:none;font-size:16px;width:200px;margin:10px; }
-  button { padding:8px 16px;border:none;border-radius:6px;font-size:16px;cursor:pointer;font-weight:bold;margin:5px;}
-  #export-btn{background:#38bdf8;color:#0f172a;}
-  #clear-history{background:#ef4444;color:white;}
-  #clear-history:hover{background:#dc2626;}
-  #table-wrapper{max-height:70vh;overflow-y:auto;width:95%;margin:auto;}
-  table{border-collapse:collapse;margin:20px auto;width:95%;max-width:800px;background:#1e293b;border-radius:8px;overflow:hidden;}
-  th,td{border:1px solid #334155;padding:8px;}
-  th{background:#334155;color:#facc15;position:sticky;top:0;z-index:2;}
-  tr:nth-child(even){background:#0f172a;}
-  td.clickable{color:#38bdf8;cursor:pointer;text-decoration:underline;}
-  #back-btn{background:#64748b;color:white;margin-top:20px;}
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background-color: #111;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 { color: #ffcc00; }
+  input, button {
+    padding: 8px 14px;
+    margin: 8px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+  }
+  input { width: 120px; }
+  button { cursor: pointer; }
+  #records {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 800px;
+    border-collapse: collapse;
+  }
+  #records th, #records td {
+    border-bottom: 1px solid #666;
+    padding: 10px;
+  }
+  #records th { background-color: #222; color: #ffcc00; }
+  #records tr:hover { background-color: #333; }
+  #clearAll {
+    background-color: #e74c3c;
+    color: white;
+    font-weight: bold;
+  }
+  #clearAll:hover { background-color: #c0392b; }
 </style>
 </head>
 <body>
-  <h1>📜 抽獎紀錄後台</h1>
-  <input type="text" id="search" placeholder="搜尋班級或座號...">
-  <button id="clear">顯示全部</button>
-  <button id="export-btn">匯出 CSV</button>
-  <button id="clear-history">🧹 清除全部紀錄</button>
+  <h1>🎁 抽獎紀錄管理系統 🎁</h1>
 
-  <div id="table-wrapper">
-    <table id="history-table">
-      <thead>
-        <tr><th>班級</th><th>座號</th><th>獎品</th><th>時間</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div>
+    <input type="text" id="classSearch" placeholder="輸入班級">
+    <input type="text" id="seatSearch" placeholder="輸入座號">
+    <button onclick="filterRecords()">搜尋</button>
+    <button onclick="loadRecords()">重新載入</button>
+    <button id="clearAll" onclick="clearAllRecords()">清除全部紀錄</button>
   </div>
-  <button id="back-btn" onclick="window.close()">關閉視窗</button>
+
+  <table id="records">
+    <thead>
+      <tr><th>班級</th><th>座號</th><th>獎品</th><th>時間</th></tr>
+    </thead>
+    <tbody id="recordBody"></tbody>
+  </table>
 
 <script>
-let history = [];
+const scriptURL = "https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec";
 
-fetch("fetch("https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec")
-")
-  .then(res => res.json())
-  .then(data => {
-    history = data.sort((a,b)=>new Date(b.time)-new Date(a.time));
-    renderTable(history);
-  })
-  .catch(err=>{
+async function loadRecords() {
+  try {
+    const res = await fetch(scriptURL);
+    const data = await res.json();
+
+    if (!Array.isArray(data)) throw new Error("資料格式錯誤");
+
+    localStorage.setItem("lotteryRecords", JSON.stringify(data));
+    displayRecords(data);
+  } catch (error) {
     alert("⚠️ 雲端讀取失敗，改用本機資料。");
-    history = JSON.parse(localStorage.getItem("drawHistory")||"[]");
-    renderTable(history);
+    const localData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
+    displayRecords(localData);
+  }
+}
+
+function displayRecords(records) {
+  const tbody = document.getElementById("recordBody");
+  tbody.innerHTML = "";
+  records.forEach(r => {
+    const row = `<tr>
+      <td>${r.className || ""}</td>
+      <td>${r.seat || ""}</td>
+      <td>${r.prize || ""}</td>
+      <td>${r.time || ""}</td>
+    </tr>`;
+    tbody.insertAdjacentHTML("beforeend", row);
   });
-
-const tbody=document.querySelector("#history-table tbody");
-const searchInput=document.getElementById("search");
-
-function renderTable(data){
-  tbody.innerHTML=data.map(h=>`
-    <tr>
-      <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.className}</td>
-      <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.seat}</td>
-      <td>${h.prize}</td><td>${h.time}</td>
-    </tr>`).join("")||"<tr><td colspan='4'>目前沒有抽獎紀錄</td></tr>";
 }
 
-searchInput.addEventListener("input",()=>{
-  const keyword=searchInput.value.trim();
-  if(!keyword)renderTable(history);
-  else{
-    const filtered=history.filter(h=>h.className.includes(keyword)||h.seat.includes(keyword));
-    renderTable(filtered);
-  }
-});
-document.getElementById("clear").addEventListener("click",()=>{searchInput.value="";renderTable(history);});
+function filterRecords() {
+  const classSearch = document.getElementById("classSearch").value.trim();
+  const seatSearch = document.getElementById("seatSearch").value.trim();
+  const allData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
 
-function showStudent(className,seat){
-  const filtered=history.filter(h=>h.className===className&&h.seat===seat);
-  alert(`🎯 ${className}班${seat}號的紀錄：\n\n`+filtered.map(f=>`• ${f.prize}（${f.time}）`).join("\n"));
+  const filtered = allData.filter(r =>
+    (!classSearch || r.className == classSearch) &&
+    (!seatSearch || r.seat == seatSearch)
+  );
+  displayRecords(filtered);
 }
 
-document.getElementById("export-btn").addEventListener("click",()=>{
-  if(history.length===0){alert("沒有資料可匯出");return;}
-  const csvRows=[["班級","座號","獎品","時間"],...history.map(h=>[h.className,h.seat,h.prize,h.time])];
-  const csvContent=csvRows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
-  const blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download="抽獎紀錄.csv";a.click();
-});
-
-// 🧹 清除所有紀錄（本機端）
-document.getElementById("clear-history").addEventListener("click",()=>{
-  if(confirm("⚠️ 確定要刪除所有本機紀錄嗎？雲端資料不會受影響！")){
-    localStorage.removeItem("drawHistory");
-    alert("✅ 已清除本機紀錄");
-    location.reload();
+async function clearAllRecords() {
+  if (!confirm("⚠️ 確定要刪除所有雲端紀錄？")) return;
+  try {
+    await fetch(scriptURL + "?action=clear", { method: "GET" });
+    alert("✅ 雲端紀錄已清空！");
+    localStorage.removeItem("lotteryRecords");
+    document.getElementById("recordBody").innerHTML = "";
+  } catch (e) {
+    alert("⚠️ 無法清除雲端紀錄。請稍後再試。");
   }
-});
+}
+
+loadRecords();
 </script>
 </body>
 </html>

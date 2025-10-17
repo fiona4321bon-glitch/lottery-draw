@@ -85,9 +85,9 @@
   }
 
   #popup img {
-    width: 400px;         
-    height: 400px;        
-    object-fit: contain;  
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 0 30px rgba(255,255,255,0.8);
     background: rgba(255,255,255,0.1);
@@ -136,7 +136,7 @@
   <audio id="sfx" src="spin.mp3" preload="auto"></audio>
 
 <script>
-// 🎁 獎品與機率設定（非線性反比法）
+// 🎁 獎品設定
 const prizes = [
   { name: "巨大橡皮擦一顆", prob: 6.2, img: "eraser.jpg" },
   { name: "娃娃一個", prob: 13.3, img: "doll.jpg" },
@@ -153,7 +153,7 @@ const prizes = [
   { name: "謝謝惠顧", prob: 1.3, img: "thanks.jpg" }
 ];
 
-// 🎲 抽獎演算法
+// 🎲 隨機抽獎
 function weightedRandom() {
   const total = prizes.reduce((sum, p) => sum + p.prob, 0);
   const r = Math.random() * total;
@@ -165,43 +165,45 @@ function weightedRandom() {
   return prizes[prizes.length - 1];
 }
 
-// 🎬 顯示獎品大圖
+// 🎬 顯示彈窗
 function showPopup(prize) {
   const popup = document.getElementById("popup");
   const img = document.getElementById("prize-image");
   const text = document.getElementById("prize-name");
-
-  img.src = prize.img ? prize.img : "noimage.jpg";
+  img.src = prize.img || "noimage.jpg";
   text.textContent = prize.name;
-
   popup.style.display = "flex";
 }
+function closePopup() { document.getElementById("popup").style.display = "none"; }
 
-// ❌ 關閉彈窗
-function closePopup() {
-  document.getElementById("popup").style.display = "none";
-}
-
-// 🧒 學生抽獎
+// 🧒 抽獎流程
 document.getElementById("start").addEventListener("click", () => {
   const className = document.getElementById("class").value.trim();
   const seat = document.getElementById("seat").value.trim();
   const sfx = document.getElementById("sfx");
   const result = document.getElementById("result");
 
-  if (!className || !seat) {
-    alert("請輸入班級與座號！");
-    return;
-  }
+  if (!className || !seat) return alert("請輸入班級與座號！");
 
-  sfx.currentTime = 0;
-  sfx.play();
+  sfx.currentTime = 0; sfx.play();
 
   const prize = weightedRandom();
   result.textContent = `🎉 ${className} 班 ${seat} 號 抽中：${prize.name}！`;
   showPopup(prize);
 
   const record = { className, seat, prize: prize.name, time: new Date().toLocaleString() };
+
+  // ✅ 同步至雲端
+  fetch("https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record)
+  })
+  .then(res => res.text())
+  .then(msg => console.log("雲端已同步:", msg))
+  .catch(err => console.error("雲端同步失敗:", err));
+
+  // 備份至本機
   const history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
   history.push(record);
   localStorage.setItem("drawHistory", JSON.stringify(history));
@@ -213,10 +215,10 @@ document.getElementById("admin-btn").addEventListener("click", () => {
   const pass = prompt("請輸入密碼：");
   if (user === "scienceA" && pass === "089322047") {
     window.open("admin.html", "_blank");
-  } else if (user || pass) {
-    alert("帳號或密碼錯誤！");
-  }
+  } else alert("帳號或密碼錯誤！");
 });
 </script>
 </body>
+</html>
+
 </html>

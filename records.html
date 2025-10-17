@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>抽獎紀錄後台</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #111;
+    color: white;
+    text-align: center;
+    padding: 40px;
+  }
+  table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+  }
+  th { background: rgba(255,255,255,0.2); }
+  button {
+    margin: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e74c3c, #f1948a);
+    color: white;
+    cursor: pointer;
+  }
+  button:hover { transform: scale(1.05); }
+</style>
+</head>
+
+<body>
+  <h1>📋 抽獎紀錄後台</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>班級</th>
+        <th>座號</th>
+        <th>獎品</th>
+        <th>時間</th>
+      </tr>
+    </thead>
+    <tbody id="records"></tbody>
+  </table>
+  <button onclick="window.location.href='index.html'">回首頁</button>
+
+<script>
+const sampleData = [
+  {class: "506", seat: "12", prize: "豆豆貼一個", time: "2025/10/17 上午 10:27:40"},
+  {class: "505", seat: "03", prize: "鉛筆盒一個", time: "2025/10/17 上午 09:12:30"}
+];
+const tbody = document.getElementById("records");
+sampleData.forEach(r => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${r.class}</td><td>${r.seat}</td><td>${r.prize}</td><td>${r.time}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

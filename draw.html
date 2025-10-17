@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>教室抽獎系統</title>
 <style>
   body {
@@ -39,7 +39,7 @@
     background-color: #2ecc71;
   }
   #result {
-    font-size: 24px;
+    font-size: 26px;
     margin-top: 20px;
   }
   #prizeImage {
@@ -60,16 +60,15 @@
     <input type="text" id="classInput" placeholder="請輸入班級 (例：506)">
     <input type="text" id="seatInput" placeholder="請輸入座號 (例：12)">
   </div>
-  <button onclick="startDraw()">開始抽獎</button>
+  <button id="drawBtn">開始抽獎</button>
   <button onclick="window.location.href='index.html'">回首頁</button>
 
   <div id="result"></div>
-  <img id="prizeImage">
+  <img id="prizeImage" alt="獎項圖片">
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec";
 
-// 🎯 獎項與機率設定
 const prizes = [
   { name: "鹿角蕨一株", weight: 1 },
   { name: "捏捏樂一個", weight: 2 },
@@ -86,7 +85,6 @@ const prizes = [
   { name: "謝謝惠顧", weight: 2 }
 ];
 
-// 📸 對應圖片（建議放在 /images 資料夾或同目錄）
 const prizeImages = {
   "鹿角蕨一株": "deerfern.jpg",
   "捏捏樂一個": "stressball.jpg",
@@ -103,10 +101,14 @@ const prizeImages = {
   "謝謝惠顧": "thanks.jpg"
 };
 
-// 🎰 抽獎邏輯
+// 綁定按鈕
+document.getElementById("drawBtn").addEventListener("click", startDraw);
+
 function startDraw() {
   const className = document.getElementById("classInput").value.trim();
   const seat = document.getElementById("seatInput").value.trim();
+  const result = document.getElementById("result");
+  const img = document.getElementById("prizeImage");
 
   if (!className || !seat) {
     alert("請輸入班級與座號！");
@@ -114,7 +116,14 @@ function startDraw() {
   }
 
   const prize = weightedRandom(prizes);
-  showPrize(prize);
+  result.textContent = `🎉 恭喜 ${className} 班 ${seat} 號 抽中：${prize}`;
+  
+  if (prizeImages[prize]) {
+    img.src = prizeImages[prize];
+    img.style.display = "block";
+  } else {
+    img.style.display = "none";
+  }
 
   const record = {
     className,
@@ -126,30 +135,19 @@ function startDraw() {
   saveRecord(record);
 }
 
-// 📊 機率抽取
 function weightedRandom(list) {
-  const totalWeight = list.reduce((sum, item) => sum + item.weight, 0);
-  let random = Math.random() * totalWeight;
-  for (let item of list) {
-    random -= item.weight;
-    if (random <= 0) return item.name;
+  const total = list.reduce((sum, item) => sum + item.weight, 0);
+  let rand = Math.random() * total;
+  for (const item of list) {
+    rand -= item.weight;
+    if (rand <= 0) return item.name;
   }
 }
 
-// 🖼 顯示抽中獎品
-function showPrize(prize) {
-  const result = document.getElementById("result");
-  const img = document.getElementById("prizeImage");
-  result.textContent = `恭喜抽中：${prize}`;
-  img.src = prizeImages[prize] || "";
-  img.style.display = img.src ? "block" : "none";
-}
-
-// ☁️ 儲存抽獎紀錄（雲端 + 本機）
 async function saveRecord(record) {
-  const localRecords = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
-  localRecords.push(record);
-  localStorage.setItem("lotteryRecords", JSON.stringify(localRecords));
+  const localData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
+  localData.push(record);
+  localStorage.setItem("lotteryRecords", JSON.stringify(localData));
 
   try {
     await fetch(scriptURL, {
@@ -157,9 +155,9 @@ async function saveRecord(record) {
       body: JSON.stringify(record),
       headers: { "Content-Type": "application/json" }
     });
-    console.log("✅ 上傳雲端成功");
-  } catch (error) {
-    console.warn("⚠️ 雲端上傳失敗，暫存在本機");
+    console.log("✅ 已上傳雲端紀錄");
+  } catch (err) {
+    console.warn("⚠️ 雲端上傳失敗，暫存本機", err);
   }
 }
 </script>

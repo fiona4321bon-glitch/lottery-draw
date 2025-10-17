@@ -1,165 +1,61 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>教室抽獎系統</title>
+<meta charset="UTF-8">
+<title>教室抽獎</title>
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
     background: url("cover.jpg") center/cover no-repeat fixed;
-    color: #fff;
     text-align: center;
+    color: #fff;
     min-height: 100vh;
-    margin: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  h1 {
-    color: #ffcc00;
-    text-shadow: 2px 2px 5px #000;
-  }
   input, button {
+    font-size: 20px;
+    margin: 10px;
     padding: 10px;
-    font-size: 18px;
-    margin: 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
-  }
-  input {
-    width: 180px;
   }
   button {
     background-color: #27ae60;
     color: white;
     cursor: pointer;
   }
-  button:hover {
-    background-color: #2ecc71;
-  }
-  #result {
-    font-size: 26px;
-    margin-top: 20px;
-  }
-  #prizeImage {
-    display: none;
-    width: 400px;
-    height: 400px;
-    object-fit: contain;
-    margin: 20px auto;
-    border-radius: 20px;
-    box-shadow: 0 0 20px #fff;
-  }
+  button:hover { background-color: #2ecc71; }
+  #result { margin-top: 20px; font-size: 26px; }
 </style>
 </head>
 <body>
   <h1>🎁 教室抽獎系統 🎁</h1>
-
   <div>
-    <input type="text" id="classInput" placeholder="請輸入班級 (例：506)">
-    <input type="text" id="seatInput" placeholder="請輸入座號 (例：12)">
+    <input id="classInput" placeholder="班級(例:506)">
+    <input id="seatInput" placeholder="座號(例:12)">
   </div>
-  <button id="drawBtn">開始抽獎</button>
+  <button onclick="startDraw()">開始抽獎</button>
   <button onclick="window.location.href='index.html'">回首頁</button>
-
   <div id="result"></div>
-  <img id="prizeImage" alt="獎項圖片">
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwNIdWWCgKdP8Ee8WfbyheH_TwTFDuGRtAl7W9zza9nlKhKs3DVW3KvB-1rJ8N-yaIFOA/exec";
-
 const prizes = [
-  { name: "鹿角蕨一株", weight: 1 },
-  { name: "捏捏樂一個", weight: 2 },
-  { name: "鉛筆盒一個", weight: 2 },
-  { name: "巨大橡皮擦一顆", weight: 3 },
-  { name: "豆豆貼一個", weight: 3 },
-  { name: "花盆一個", weight: 3 },
-  { name: "迷迭香盆栽一個", weight: 4 },
-  { name: "多肉植物一盆", weight: 5 },
-  { name: "便利貼一個", weight: 6 },
-  { name: "娃娃一個", weight: 6 },
-  { name: "自動鉛筆一枝", weight: 7 },
-  { name: "紋身貼紙一張", weight: 8 },
-  { name: "謝謝惠顧", weight: 2 }
+  "巨大橡皮擦一顆", "自動鉛筆一枝", "豆豆貼一個",
+  "便利貼一個", "多肉植物一盆", "紋身貼紙一張",
+  "鉛筆盒一個", "鹿角蕨一株", "花盆一個",
+  "迷迭香盆栽一個", "捏捏樂一個", "娃娃一個", "謝謝惠顧"
 ];
 
-const prizeImages = {
-  "鹿角蕨一株": "deerfern.jpg",
-  "捏捏樂一個": "stressball.jpg",
-  "鉛筆盒一個": "pencilcase.jpg",
-  "巨大橡皮擦一顆": "eraser.jpg",
-  "豆豆貼一個": "beadsticker.jpg",
-  "花盆一個": "flowerpot.jpg",
-  "迷迭香盆栽一個": "rosemary.jpg",
-  "多肉植物一盆": "succulent.jpg",
-  "便利貼一個": "postit.jpg",
-  "娃娃一個": "doll.jpg",
-  "自動鉛筆一枝": "pencil.jpg",
-  "紋身貼紙一張": "tattoo.jpg",
-  "謝謝惠顧": "thanks.jpg"
-};
-
-// 綁定按鈕
-document.getElementById("drawBtn").addEventListener("click", startDraw);
-
 function startDraw() {
-  const className = document.getElementById("classInput").value.trim();
-  const seat = document.getElementById("seatInput").value.trim();
-  const result = document.getElementById("result");
-  const img = document.getElementById("prizeImage");
-
-  if (!className || !seat) {
-    alert("請輸入班級與座號！");
-    return;
-  }
-
-  const prize = weightedRandom(prizes);
-  result.textContent = `🎉 恭喜 ${className} 班 ${seat} 號 抽中：${prize}`;
-  
-  if (prizeImages[prize]) {
-    img.src = prizeImages[prize];
-    img.style.display = "block";
-  } else {
-    img.style.display = "none";
-  }
-
-  const record = {
-    className,
-    seat,
-    prize,
-    time: new Date().toLocaleString("zh-TW")
-  };
-
-  saveRecord(record);
-}
-
-function weightedRandom(list) {
-  const total = list.reduce((sum, item) => sum + item.weight, 0);
-  let rand = Math.random() * total;
-  for (const item of list) {
-    rand -= item.weight;
-    if (rand <= 0) return item.name;
-  }
-}
-
-async function saveRecord(record) {
-  const localData = JSON.parse(localStorage.getItem("lotteryRecords") || "[]");
-  localData.push(record);
-  localStorage.setItem("lotteryRecords", JSON.stringify(localData));
-
-  try {
-    await fetch(scriptURL, {
-      method: "POST",
-      body: JSON.stringify(record),
-      headers: { "Content-Type": "application/json" }
-    });
-    console.log("✅ 已上傳雲端紀錄");
-  } catch (err) {
-    console.warn("⚠️ 雲端上傳失敗，暫存本機", err);
-  }
+  const c = document.getElementById("classInput").value.trim();
+  const s = document.getElementById("seatInput").value.trim();
+  if (!c || !s) { alert("請輸入班級與座號"); return; }
+  const prize = prizes[Math.floor(Math.random() * prizes.length)];
+  document.getElementById("result").innerHTML = `🎉 恭喜 ${c} 班 ${s} 號 抽中：${prize}`;
 }
 </script>
 </body>
 </html>
+

@@ -12,29 +12,60 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    color: #fff;
+    margin: 0;
+  }
+
+  .container {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    padding: 50px 80px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  h1 {
+    font-size: 42px;
+    color: #ffcc00;
+    margin-bottom: 40px;
     text-shadow: 2px 2px 5px #000;
   }
-  h1 {
-    font-size: 40px;
-    color: #ffcc00;
-  }
+
   button {
-    font-size: 22px;
-    margin: 15px;
+    display: inline-block;
+    margin: 10px;
     padding: 12px 28px;
+    font-size: 20px;
+    color: white;
+    background-color: #27ae60;
     border: none;
     border-radius: 12px;
-    background-color: #27ae60;
-    color: white;
     cursor: pointer;
+    transition: 0.2s;
   }
-  button:hover { background-color: #2ecc71; }
+
+  button:hover {
+    background-color: #2ecc71;
+    transform: scale(1.05);
+  }
+
+  .admin {
+    background-color: #3498db;
+  }
+  .admin:hover {
+    background-color: #2980b9;
+  }
 </style>
 </head>
+
 <body>
-  <h1>🎁 教室抽獎系統 🎁</h1>
-  <button onclick="window.location.href='prizes.html'">查看獎品</button>
-  <button onclick="window.location.href='draw.html'">開始抽獎</button>
+  <div class="container">
+    <h1>🎁 教室抽獎系統 🎁</h1>
+    <div>
+      <button onclick="window.location.href='prizes.html'">查看獎品</button>
+      <button onclick="window.location.href='draw.html'">開始抽獎</button>
+      <button class="admin" onclick="window.location.href='admin.html'">管理員登入</button>
+    </div>
+  </div>
 </body>
 </html>

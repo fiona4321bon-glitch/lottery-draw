@@ -1,58 +1,89 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>抽獎紀錄後台</title>
-<style>
-  body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    background: #111;
-    color: white;
-    text-align: center;
-    padding: 40px;
-  }
-  input {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    margin-bottom: 15px;
-    font-size: 16px;
-  }
-  table {
-    width: 85%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background: rgba(255,255,255,0.05);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  th, td {
-    padding: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    cursor: default;
-  }
-  td:hover {
-    background: rgba(255,255,255,0.1);
-    cursor: pointer;
-  }
-  th { background: rgba(255,255,255,0.2); }
-  button {
-    margin: 10px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #3498db, #5dade2);
-    color: white;
-    cursor: pointer;
-  }
-  button:hover { transform: scale(1.05); }
-</style>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎁 抽獎紀錄查詢系統 🎁</title>
+  <style>
+    body {
+      background-color: #f7f7f7;
+      font-family: "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
 
+    h1 {
+      color: #ff9800;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px #00000033;
+    }
+
+    input {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+      transform: scale(1.05);
+    }
+
+    table {
+      margin: 30px auto;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 900px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #ffeb3b;
+    }
+
+    tr:hover {
+      background-color: #fff9c4;
+    }
+
+    #loading {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #777;
+    }
+  </style>
+</head>
 <body>
-  <h1>📋 抽獎紀錄後台</h1>
-  <input type="text" id="searchInput" placeholder="搜尋班級或座號（例：506 或 12）" onkeyup="filterTable()">
-  <table>
+  <h1>🎁 抽獎紀錄查詢系統 🎁</h1>
+
+  <input type="text" id="searchInput" placeholder="輸入班級、座號或姓名搜尋">
+  <button onclick="searchData()">搜尋</button>
+  <button onclick="loadData()">重新載入</button>
+
+  <div id="loading">載入中，請稍候...</div>
+
+  <table id="recordTable" style="display:none;">
     <thead>
       <tr>
         <th>班級</th>
@@ -61,53 +92,80 @@
         <th>時間</th>
       </tr>
     </thead>
-    <tbody id="records"></tbody>
+    <tbody id="recordBody"></tbody>
   </table>
-  <button onclick="window.location.href='index.html'">回首頁</button>
 
-<script>
-const SHEET_API = "https://script.google.com/macros/s/AKfycbzziwqNPcw7FoWW05U4um6BpGvb5yIUKoGIv6yGWdeif7owCRcKr7gsX1zIJqvFqklGJg/exec";
-let allData = [];
+  <script>
+    const SHEET_URL =
+      "https://docs.google.com/spreadsheets/d/19NKMepiPSPxJ9CdtRD27JIhSjs_BCsjJZfXc58NqoI0/gviz/tq?tqx=out:json";
 
-fetch(SHEET_API)
-  .then(res => res.json())
-  .then(data => {
-    allData = data;
-    renderTable(data);
-  })
-  .catch(err => {
-    alert("雲端讀取失敗");
-    console.error(err);
-  });
+    let allData = [];
 
-function renderTable(data) {
-  const tbody = document.getElementById("records");
-  tbody.innerHTML = "";
-  data.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.class}</td><td>${r.seat}</td><td>${r.prize}</td><td>${r.time || ""}</td>`;
-    tr.addEventListener("click", () => showStudentHistory(r.class, r.seat));
-    tbody.appendChild(tr);
-  });
-}
+    // 讀取試算表資料
+    async function loadData() {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("recordTable").style.display = "none";
 
-function filterTable() {
-  const keyword = document.getElementById("searchInput").value.trim();
-  const filtered = allData.filter(r => r.class.includes(keyword) || r.seat.includes(keyword));
-  renderTable(filtered);
-}
+      try {
+        const response = await fetch(SHEET_URL);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
 
-function showStudentHistory(cls, seat) {
-  const history = allData
-    .filter(r => r.class === cls && r.seat === seat)
-    .sort((a,b) => new Date(b.time) - new Date(a.time));
-  let msg = `📘 ${cls} 班 ${seat} 號 抽獎紀錄：\n\n`;
-  history.forEach((r, i) => {
-    msg += `${i+1}. ${r.prize} (${r.time || "無時間紀錄"})\n`;
-  });
-  alert(msg);
-}
-</script>
+        allData = rows.map(r => ({
+          class: r.c[0]?.v || "",
+          seat: r.c[1]?.v || "",
+          prize: r.c[2]?.v || "",
+          time: r.c[3]?.v || ""
+        }));
+
+        displayData(allData);
+      } catch (err) {
+        alert("❌ 無法讀取資料，請確認試算表是否公開。");
+        console.error(err);
+      }
+    }
+
+    // 顯示資料表
+    function displayData(data) {
+      const tbody = document.getElementById("recordBody");
+      tbody.innerHTML = "";
+
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.class}</td>
+          <td>${item.seat}</td>
+          <td>${item.prize}</td>
+          <td>${item.time}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("recordTable").style.display = "table";
+    }
+
+    // 搜尋資料
+    function searchData() {
+      const keyword = document.getElementById("searchInput").value.trim();
+      if (!keyword) {
+        displayData(allData);
+        return;
+      }
+
+      const filtered = allData.filter(item =>
+        item.class.includes(keyword) ||
+        item.seat.toString().includes(keyword) ||
+        item.prize.includes(keyword)
+      );
+
+      displayData(filtered);
+    }
+
+    // 頁面載入自動執行
+    window.onload = loadData;
+  </script>
 </body>
 </html>
 

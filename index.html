@@ -51,10 +51,21 @@
   <div class="container">
     <h1>🎁 教室抽獎系統 🎁</h1>
     <div>
-      <button class="btn" onclick="window.location.href='prizes.html'">查看獎品</button>
       <button class="btn" onclick="window.location.href='draw.html'">開始抽獎</button>
-      <button class="btn admin" onclick="window.location.href='admin.html'">管理員登入</button>
+      <button class="btn admin" onclick="login()">管理員登入</button>
     </div>
   </div>
+
+<script>
+function login() {
+  const user = prompt("請輸入帳號：");
+  const pass = prompt("請輸入密碼：");
+  if (user === "scienceA" && pass === "089322047") {
+    window.location.href = "admin.html";
+  } else {
+    alert("帳號或密碼錯誤！");
+  }
+}
+</script>
 </body>
 </html>

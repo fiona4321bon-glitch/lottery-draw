@@ -87,29 +87,29 @@
   <img id="prizeImage" src="" alt="獎項圖片" />
 
   <script>
-    // ✅ Google 表單的 formResponse 連結（務必正確）
+    // ✅ Google 表單連結
     const FORM_URL =
       "https://docs.google.com/forms/d/e/1FAIpQLSdY56-MpgXPSRBovznmZb-phQwWloZ_tf51KiPLo7Qc1cPgpg/formResponse";
 
-    // ✅ 獎項設定（請確保圖片都放在 images/ 裡）
+    // ✅ 用小數表示的機率設定（例如 0.25 = 25%）
     const prizes = [
-      { name: "豆豆貼一個", weight: 20, img: "images/doudou.jpg" },
-      { name: "便利貼一個", weight: 25, img: "images/note.jpg" },
-      { name: "自動鉛筆一枝", weight: 15, img: "images/pencil.jpg" },
-      { name: "捏捏樂一個", weight: 10, img: "images/stress.jpg" },
-      { name: "多肉植物一盆", weight: 5, img: "images/succulent.jpg" },
-      { name: "迷迭香一盆", weight: 5, img: "images/rosemary.jpg" },
-      { name: "鹿角蕨一盆", weight: 2, img: "images/fern.jpg" },
-      { name: "謝謝惠顧", weight: 8, img: "images/thanks.jpg" }
+      { name: "豆豆貼一個", prob: 0.25, img: "images/doudou.jpg" },
+      { name: "便利貼一個", prob: 0.25, img: "images/note.jpg" },
+      { name: "自動鉛筆一枝", prob: 0.15, img: "images/pencil.jpg" },
+      { name: "捏捏樂一個", prob: 0.1, img: "images/stress.jpg" },
+      { name: "多肉植物一盆", prob: 0.05, img: "images/succulent.jpg" },
+      { name: "迷迭香一盆", prob: 0.05, img: "images/rosemary.jpg" },
+      { name: "鹿角蕨一盆", prob: 0.03, img: "images/fern.jpg" },
+      { name: "謝謝惠顧", prob: 0.12, img: "images/thanks.jpg" }
     ];
 
-    // ✅ 加權亂數選取
-    function weightedRandom(prizes) {
-      const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-      const rand = Math.random() * totalWeight;
+    // ✅ 根據機率抽獎
+    function drawByProbability(prizes) {
+      const totalProb = prizes.reduce((sum, p) => sum + p.prob, 0);
+      const rand = Math.random() * totalProb;
       let cumulative = 0;
       for (const prize of prizes) {
-        cumulative += prize.weight;
+        cumulative += prize.prob;
         if (rand < cumulative) return prize;
       }
       return prizes[prizes.length - 1];
@@ -125,7 +125,7 @@
         return;
       }
 
-      const prize = weightedRandom(prizes);
+      const prize = drawByProbability(prizes);
 
       // 顯示中獎結果
       document.getElementById(
@@ -159,3 +159,4 @@
   </script>
 </body>
 </html>
+

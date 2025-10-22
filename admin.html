@@ -11,8 +11,15 @@
     text-align: center;
     padding: 40px;
   }
+  input {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
   table {
-    width: 80%;
+    width: 85%;
     margin: 20px auto;
     border-collapse: collapse;
     background: rgba(255,255,255,0.05);
@@ -22,6 +29,11 @@
   th, td {
     padding: 12px;
     border-bottom: 1px solid rgba(255,255,255,0.2);
+    cursor: default;
+  }
+  td:hover {
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
   }
   th { background: rgba(255,255,255,0.2); }
   button {
@@ -39,6 +51,7 @@
 
 <body>
   <h1>📋 抽獎紀錄後台</h1>
+  <input type="text" id="searchInput" placeholder="搜尋班級或座號（例：506 或 12）" onkeyup="filterTable()">
   <table>
     <thead>
       <tr>
@@ -54,22 +67,47 @@
 
 <script>
 const SHEET_API = "https://script.google.com/macros/s/AKfycbzziwqNPcw7FoWW05U4um6BpGvb5yIUKoGIv6yGWdeif7owCRcKr7gsX1zIJqvFqklGJg/exec";
+let allData = [];
 
 fetch(SHEET_API)
   .then(res => res.json())
   .then(data => {
-    const tbody = document.getElementById("records");
-    tbody.innerHTML = "";
-    data.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.class}</td><td>${r.seat}</td><td>${r.prize}</td><td>${r.time || ""}</td>`;
-      tbody.appendChild(tr);
-    });
+    allData = data;
+    renderTable(data);
   })
   .catch(err => {
     alert("雲端讀取失敗");
     console.error(err);
   });
+
+function renderTable(data) {
+  const tbody = document.getElementById("records");
+  tbody.innerHTML = "";
+  data.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.class}</td><td>${r.seat}</td><td>${r.prize}</td><td>${r.time || ""}</td>`;
+    tr.addEventListener("click", () => showStudentHistory(r.class, r.seat));
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable() {
+  const keyword = document.getElementById("searchInput").value.trim();
+  const filtered = allData.filter(r => r.class.includes(keyword) || r.seat.includes(keyword));
+  renderTable(filtered);
+}
+
+function showStudentHistory(cls, seat) {
+  const history = allData
+    .filter(r => r.class === cls && r.seat === seat)
+    .sort((a,b) => new Date(b.time) - new Date(a.time));
+  let msg = `📘 ${cls} 班 ${seat} 號 抽獎紀錄：\n\n`;
+  history.forEach((r, i) => {
+    msg += `${i+1}. ${r.prize} (${r.time || "無時間紀錄"})\n`;
+  });
+  alert(msg);
+}
 </script>
 </body>
 </html>
+

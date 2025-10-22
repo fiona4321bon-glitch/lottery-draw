@@ -1,218 +1,75 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 <title>抽獎紀錄後台</title>
 <style>
   body {
-    background: #0f172a;
-    color: #f8fafc;
     font-family: "Microsoft JhengHei", sans-serif;
-    text-align: center;
-    padding: 30px;
-    margin: 0;
-  }
-
-  h1 { color: #facc15; margin-bottom: 10px; }
-
-  input {
-    padding: 8px;
-    border-radius: 6px;
-    border: none;
-    font-size: 16px;
-    width: 200px;
-    margin: 10px;
-  }
-
-  button {
-    padding: 8px 16px;
-    background-color: #22c55e;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    color: #0f172a;
-    font-weight: bold;
-    margin: 5px;
-  }
-
-  button:hover { opacity: 0.9; }
-
-  #export-btn {
-    background-color: #38bdf8;
-    color: #0f172a;
-  }
-
-  #clear-history {
-    background-color: #ef4444;
+    background: #111;
     color: white;
+    text-align: center;
+    padding: 40px;
   }
-
-  #clear-history:hover {
-    background-color: #dc2626;
-  }
-
   table {
-    border-collapse: collapse;
+    width: 80%;
     margin: 20px auto;
-    width: 95%;
-    max-width: 800px;
-    background-color: #1e293b;
-    border-radius: 8px;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
     overflow: hidden;
   }
-
   th, td {
-    border: 1px solid #334155;
-    padding: 8px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
   }
-
-  th {
-    background: #334155;
-    color: #facc15;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-
-  tr:nth-child(even) { background: #0f172a; }
-
-  td.clickable {
-    color: #38bdf8;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-
-  #table-wrapper {
-    max-height: 70vh;
-    overflow-y: auto;
-    margin: 0 auto;
-    width: 95%;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.4) transparent;
-  }
-
-  #table-wrapper::-webkit-scrollbar { width: 8px; }
-  #table-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.4);
-    border-radius: 4px;
-  }
-  #table-wrapper::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.6);
-  }
-
-  #back-btn {
-    background-color: #64748b;
+  th { background: rgba(255,255,255,0.2); }
+  button {
+    margin: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3498db, #5dade2);
     color: white;
-    margin-top: 20px;
+    cursor: pointer;
   }
+  button:hover { transform: scale(1.05); }
 </style>
 </head>
+
 <body>
-  <h1>📜 抽獎紀錄後台</h1>
-
-  <input type="text" id="search" placeholder="搜尋班級或座號...">
-  <button id="clear">顯示全部</button>
-  <button id="export-btn">匯出 Excel（CSV）</button>
-  <button id="clear-history">🧹 清除全部紀錄</button>
-
-  <div id="table-wrapper">
-    <table id="history-table">
-      <thead>
-        <tr>
-          <th>班級</th>
-          <th>座號</th>
-          <th>獎品</th>
-          <th>時間</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <button id="back-btn" onclick="window.close()">關閉視窗</button>
+  <h1>📋 抽獎紀錄後台</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>班級</th>
+        <th>座號</th>
+        <th>獎品</th>
+        <th>時間</th>
+      </tr>
+    </thead>
+    <tbody id="records"></tbody>
+  </table>
+  <button onclick="window.location.href='index.html'">回首頁</button>
 
 <script>
-let history = JSON.parse(localStorage.getItem("drawHistory") || "[]");
+const SHEET_API = "https://script.google.com/macros/s/AKfycbzziwqNPcw7FoWW05U4um6BpGvb5yIUKoGIv6yGWdeif7owCRcKr7gsX1zIJqvFqklGJg/exec";
 
-// ✅ 按時間排序（最新在最上）
-history.sort((a, b) => new Date(b.time) - new Date(a.time));
-
-const tbody = document.querySelector("#history-table tbody");
-const searchInput = document.getElementById("search");
-
-// 初始化顯示
-renderTable(history);
-
-// 🔍 搜尋功能
-searchInput.addEventListener("input", () => {
-  const keyword = searchInput.value.trim();
-  if (!keyword) renderTable(history);
-  else {
-    const filtered = history.filter(h =>
-      h.className.includes(keyword) || h.seat.includes(keyword)
-    );
-    renderTable(filtered);
-  }
-});
-
-// 🔄 清除搜尋
-document.getElementById("clear").addEventListener("click", () => {
-  searchInput.value = "";
-  renderTable(history);
-});
-
-// 📋 生成表格
-function renderTable(data) {
-  tbody.innerHTML = data.map((h) => `
-    <tr>
-      <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.className}</td>
-      <td class="clickable" onclick="showStudent('${h.className}','${h.seat}')">${h.seat}</td>
-      <td>${h.prize}</td>
-      <td>${h.time}</td>
-    </tr>
-  `).join("") || "<tr><td colspan='4'>目前沒有抽獎紀錄</td></tr>";
-}
-
-// 🧾 查看單一學生紀錄
-function showStudent(className, seat) {
-  const filtered = history.filter(h => h.className === className && h.seat === seat);
-  alert(`🎯 ${className} 班 ${seat} 號的抽獎紀錄：\n\n` +
-        filtered.map(f => `• ${f.prize}（${f.time}）`).join("\n"));
-}
-
-// 💾 匯出 CSV
-document.getElementById("export-btn").addEventListener("click", () => {
-  if (history.length === 0) {
-    alert("目前沒有資料可匯出！");
-    return;
-  }
-
-  const csvRows = [
-    ["班級", "座號", "獎品", "時間"],
-    ...history.map(h => [h.className, h.seat, h.prize, h.time])
-  ];
-
-  const csvContent = csvRows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "抽獎紀錄.csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-});
-
-// 🧹 清除所有紀錄
-document.getElementById("clear-history").addEventListener("click", () => {
-  if (confirm("⚠️ 確定要刪除所有抽獎紀錄嗎？此動作無法復原！")) {
-    localStorage.removeItem("drawHistory");
-    alert("✅ 所有抽獎紀錄已清除！");
-    location.reload();
-  }
-});
+fetch(SHEET_API)
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("records");
+    tbody.innerHTML = "";
+    data.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.class}</td><td>${r.seat}</td><td>${r.prize}</td><td>${r.time || ""}</td>`;
+      tbody.appendChild(tr);
+    });
+  })
+  .catch(err => {
+    alert("雲端讀取失敗");
+    console.error(err);
+  });
 </script>
 </body>
 </html>

@@ -83,32 +83,52 @@
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzziwqNPcw7FoWW05U4um6BpGvb5yIUKoGIv6yGWdeif7owCRcKr7gsX1zIJqvFqklGJg/exec";
 
+// ✅ 小數機率設計（價格反比）
 const prizes = [
-  { name: "鹿角蕨一株", weight: 1 },
-  { name: "捏捏樂一個", weight: 2 },
-  { name: "鉛筆盒一個", weight: 2 },
-  { name: "巨大橡皮擦一顆", weight: 3 },
-  { name: "豆豆貼一個", weight: 3 },
-  { name: "花盆一個", weight: 3 },
-  { name: "迷迭香盆栽一個", weight: 4 },
-  { name: "多肉植物一盆", weight: 5 },
-  { name: "便利貼一個", weight: 6 },
-  { name: "娃娃一個", weight: 6 },
-  { name: "自動鉛筆一枝", weight: 7 },
-  { name: "紋身貼紙一張", weight: 8 },
-  { name: "謝謝惠顧", weight: 2 }
+  { name: "鹿角蕨一株", probability: 0.02 },
+  { name: "捏捏樂一個", probability: 0.04 },
+  { name: "鉛筆盒一個", probability: 0.04 },
+  { name: "巨大橡皮擦一顆", probability: 0.06 },
+  { name: "豆豆貼一個", probability: 0.06 },
+  { name: "花盆一個", probability: 0.06 },
+  { name: "迷迭香盆栽一個", probability: 0.07 },
+  { name: "多肉植物一盆", probability: 0.09 },
+  { name: "便利貼一個", probability: 0.08 },
+  { name: "娃娃一個", probability: 0.08 },
+  { name: "自動鉛筆一枝", probability: 0.10 },
+  { name: "紋身貼紙一張", probability: 0.11 },
+  { name: "謝謝惠顧", probability: 0.09 }
 ];
 
-document.getElementById("drawBtn").addEventListener("click", startDraw);
+// ✅ 圖片對應表（確保檔案同層）
+const prizeImages = {
+  "鹿角蕨一株": "deerfern.jpg",
+  "捏捏樂一個": "stressball.jpg",
+  "鉛筆盒一個": "pencilcase.jpg",
+  "巨大橡皮擦一顆": "eraser.jpg",
+  "豆豆貼一個": "beadsticker.jpg",
+  "花盆一個": "flowerpot.jpg",
+  "迷迭香盆栽一個": "rosemary.jpg",
+  "多肉植物一盆": "succulent.jpg",
+  "便利貼一個": "postit.jpg",
+  "娃娃一個": "doll.jpg",
+  "自動鉛筆一枝": "pencil.jpg",
+  "紋身貼紙一張": "tattoo.jpg",
+  "謝謝惠顧": "thanks.jpg"
+};
 
+// ✅ 按機率抽獎（機率加總為 1）
 function weightedRandom(list) {
-  const total = list.reduce((sum, item) => sum + item.weight, 0);
-  let rand = Math.random() * total;
+  const rand = Math.random();
+  let sum = 0;
   for (const item of list) {
-    rand -= item.weight;
-    if (rand <= 0) return item.name;
+    sum += item.probability;
+    if (rand <= sum) return item.name;
   }
+  return list[list.length - 1].name; // 保底
 }
+
+document.getElementById("drawBtn").addEventListener("click", startDraw);
 
 function startDraw() {
   const className = document.getElementById("classInput").value.trim();
@@ -132,19 +152,27 @@ function startDraw() {
     const prize = weightedRandom(prizes);
     resultDiv.textContent = `🎉 恭喜 ${className} 班 ${seat} 號 抽中：${prize}`;
 
-    // ✅ 寫入雲端紀錄
+    // 顯示圖片
+    if (prizeImages[prize]) {
+      img.src = prizeImages[prize];
+      img.style.display = "block";
+    } else {
+      img.style.display = "none";
+    }
+
+    // ✅ 寫入雲端試算表
+    const data = { class: className, seat: seat, prize: prize };
+    console.log("準備上傳：", data);
+
     fetch(SCRIPT_URL, {
       method: "POST",
-      body: JSON.stringify({
-        class: className,
-        seat: seat,
-        prize: prize
-      }),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     })
     .then(res => res.text())
-    .then(msg => console.log("雲端寫入結果：", msg))
-    .catch(err => console.error("寫入錯誤", err));
+    .then(txt => console.log("雲端回應：", txt))
+    .catch(err => console.error("雲端上傳錯誤：", err));
+
   }, 2000);
 }
 </script>

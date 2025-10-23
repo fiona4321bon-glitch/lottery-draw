@@ -39,12 +39,15 @@
       transition: 0.2s;
     }
 
+    .loginBtn { background-color: #2196F3; }
+    .loginBtn:hover { background-color: #1976D2; }
+
     .searchBtn { background-color: #4CAF50; }
     .searchBtn:hover { background-color: #388E3C; }
     .reloadBtn { background-color: #FF9800; }
     .reloadBtn:hover { background-color: #F57C00; }
-    .homeBtn { background-color: #2196F3; }
-    .homeBtn:hover { background-color: #1976D2; }
+    .homeBtn { background-color: #9E9E9E; }
+    .homeBtn:hover { background-color: #757575; }
 
     table {
       width: 90%;
@@ -78,36 +81,74 @@
       margin-top: 15px;
       color: #888;
     }
+
+    #loginSection, #adminSection {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>🎁 抽獎紀錄查詢系統 🎁</h1>
 
-  <div>
-    <input type="text" id="searchClass" placeholder="輸入班級" />
-    <input type="text" id="searchSeat" placeholder="輸入座號" />
-    <button class="searchBtn" onclick="searchRecords()">搜尋</button>
-    <button class="reloadBtn" onclick="loadData()">重新載入</button>
+  <!-- 🔐 登入畫面 -->
+  <div id="loginSection">
+    <p>請輸入管理員密碼以進入查詢頁面：</p>
+    <input type="password" id="passwordInput" placeholder="輸入密碼" />
+    <button class="loginBtn" onclick="checkPassword()">登入</button>
     <button class="homeBtn" onclick="location.href='index.html'">返回首頁</button>
+    <p id="loginStatus"></p>
   </div>
 
-  <p id="status">資料載入中...</p>
+  <!-- 🧾 管理員查詢區 -->
+  <div id="adminSection">
+    <div>
+      <input type="text" id="searchClass" placeholder="輸入班級" />
+      <input type="text" id="searchSeat" placeholder="輸入座號" />
+      <button class="searchBtn" onclick="searchRecords()">搜尋</button>
+      <button class="reloadBtn" onclick="loadData()">重新載入</button>
+      <button class="homeBtn" onclick="location.href='index.html'">返回首頁</button>
+    </div>
 
-  <table id="recordTable">
-    <thead>
-      <tr>
-        <th>時間</th>
-        <th>班級</th>
-        <th>座號</th>
-        <th>獎品</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <p id="status">資料載入中...</p>
+
+    <table id="recordTable">
+      <thead>
+        <tr>
+          <th>時間</th>
+          <th>班級</th>
+          <th>座號</th>
+          <th>獎品</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script>
     const sheetUrl = "https://docs.google.com/spreadsheets/d/19NKMepiPSPxJ9CdtRD27JIhSjs_BCsjJZfXc58NqoI0/gviz/tq?tqx=out:csv";
+    const adminPassword = "NTTU322047"; // ✅ 可自行更改密碼
     let allData = [];
+
+    // 登入檢查
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value.trim();
+      const status = document.getElementById("loginStatus");
+
+      if (input === adminPassword) {
+        status.innerText = "✅ 驗證成功，正在進入系統...";
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("adminSection").style.display = "block";
+        loadData();
+      } else {
+        status.innerText = "❌ 密碼錯誤，請重新輸入。";
+        status.style.color = "red";
+      }
+    }
+
+    // 初始顯示登入畫面
+    window.onload = () => {
+      document.getElementById("loginSection").style.display = "block";
+    };
 
     async function loadData() {
       document.getElementById("status").innerText = "資料載入中...";
@@ -126,7 +167,6 @@
     // ✅ CSV 轉 JSON，只保留前4欄
     function csvToJSON(csv) {
       const lines = csv.split("\n").filter(line => line.trim() !== "");
-      const headers = lines[0].split(",");
       const result = [];
 
       for (let i = 1; i < lines.length; i++) {
@@ -204,8 +244,6 @@
       displayRecords(filtered);
       document.getElementById("status").innerText = `📘 顯示座號 ${seat} 的所有紀錄（${filtered.length} 筆）`;
     }
-
-    loadData();
   </script>
 </body>
 </html>

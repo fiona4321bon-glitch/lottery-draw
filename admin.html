@@ -1,89 +1,95 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎁 抽獎紀錄查詢系統 🎁</title>
   <style>
     body {
       background-color: #f7f7f7;
       font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
-      margin: 0;
       padding: 20px;
+      color: #333;
     }
 
     h1 {
       color: #ff9800;
-      margin-bottom: 20px;
-      text-shadow: 1px 1px 2px #00000033;
+      text-shadow: 1px 1px 3px #aaa;
     }
 
     input {
       padding: 10px;
-      width: 250px;
-      font-size: 16px;
-      border-radius: 8px;
+      width: 180px;
       border: 1px solid #ccc;
-      outline: none;
-      margin-right: 10px;
+      border-radius: 8px;
+      margin: 5px;
+      font-size: 16px;
     }
 
     button {
       padding: 10px 20px;
+      margin: 10px 5px;
       border: none;
-      border-radius: 8px;
-      background-color: #4caf50;
+      border-radius: 30px;
       color: white;
+      background-color: #2196f3;
       font-size: 16px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
     button:hover {
-      background-color: #388e3c;
+      background-color: #1976d2;
       transform: scale(1.05);
     }
 
+    .home {
+      background-color: #4caf50;
+    }
+
+    .home:hover {
+      background-color: #388e3c;
+    }
+
     table {
-      margin: 30px auto;
-      border-collapse: collapse;
       width: 90%;
-      max-width: 900px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      background: white;
+      margin: 20px auto;
+      border-collapse: collapse;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
     }
 
     th, td {
       padding: 12px;
       border: 1px solid #ddd;
+      text-align: center;
+      font-size: 16px;
     }
 
     th {
-      background-color: #ffeb3b;
+      background-color: #ffcc80;
     }
 
-    tr:hover {
-      background-color: #fff9c4;
-    }
-
-    #loading {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #777;
+    #status {
+      margin-top: 15px;
+      color: #666;
     }
   </style>
 </head>
 <body>
   <h1>🎁 抽獎紀錄查詢系統 🎁</h1>
 
-  <input type="text" id="searchInput" placeholder="輸入班級、座號或姓名搜尋">
-  <button onclick="searchData()">搜尋</button>
-  <button onclick="loadData()">重新載入</button>
+  <div>
+    <input type="text" id="searchClass" placeholder="班級 (例:506)">
+    <input type="text" id="searchSeat" placeholder="座號 (例:12)">
+    <button onclick="searchRecords()">搜尋紀錄</button>
+    <button class="home" onclick="location.href='index.html'">返回首頁</button>
+  </div>
 
-  <div id="loading">載入中，請稍候...</div>
+  <p id="status">載入中，請稍候...</p>
 
-  <table id="recordTable" style="display:none;">
+  <table id="recordTable">
     <thead>
       <tr>
         <th>班級</th>
@@ -92,79 +98,82 @@
         <th>時間</th>
       </tr>
     </thead>
-    <tbody id="recordBody"></tbody>
+    <tbody></tbody>
   </table>
 
   <script>
-    const SHEET_URL =
-      "https://docs.google.com/spreadsheets/d/19NKMepiPSPxJ9CdtRD27JIhSjs_BCsjJZfXc58NqoI0/gviz/tq?tqx=out:json";
+    // ✅ Google 試算表 CSV 連結（請保持一致）
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/19NKMepiPSPxJ9CdtRD27JIhSjs_BCsjJZfXc58NqoI0/gviz/tq?tqx=out:csv";
 
     let allData = [];
 
-    // 讀取試算表資料
-    async function loadData() {
-      document.getElementById("loading").style.display = "block";
-      document.getElementById("recordTable").style.display = "none";
-
-      try {
-        const response = await fetch(SHEET_URL);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
-        const rows = json.table.rows;
-
-        allData = rows.map(r => ({
-          class: r.c[0]?.v || "",
-          seat: r.c[1]?.v || "",
-          prize: r.c[2]?.v || "",
-          time: r.c[3]?.v || ""
-        }));
-
-        displayData(allData);
-      } catch (err) {
-        alert("❌ 無法讀取資料，請確認試算表是否公開。");
-        console.error(err);
-      }
-    }
-
-    // 顯示資料表
-    function displayData(data) {
-      const tbody = document.getElementById("recordBody");
-      tbody.innerHTML = "";
-
-      data.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.class}</td>
-          <td>${item.seat}</td>
-          <td>${item.prize}</td>
-          <td>${item.time}</td>
-        `;
-        tbody.appendChild(row);
+    // ✅ 初始化讀取
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(csv => {
+        allData = csvToJSON(csv);
+        document.getElementById("status").innerText = "✅ 資料載入完成，可搜尋學生紀錄。";
+        displayRecords(allData);
+      })
+      .catch(err => {
+        console.error("讀取錯誤：", err);
+        document.getElementById("status").innerText = "❌ 無法讀取 Google 試算表資料。請確認是否設為公開。";
       });
 
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("recordTable").style.display = "table";
+    // ✅ CSV 轉 JSON
+    function csvToJSON(csv) {
+      const lines = csv.split("\n");
+      const headers = lines[0].split(",");
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(",");
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j] ? currentline[j].trim() : "";
+        }
+        result.push(obj);
+      }
+      return result;
     }
 
-    // 搜尋資料
-    function searchData() {
-      const keyword = document.getElementById("searchInput").value.trim();
-      if (!keyword) {
-        displayData(allData);
+    // ✅ 顯示紀錄
+    function displayRecords(data) {
+      const tbody = document.querySelector("#recordTable tbody");
+      tbody.innerHTML = "";
+      if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="4">查無資料</td></tr>`;
         return;
       }
 
-      const filtered = allData.filter(item =>
-        item.class.includes(keyword) ||
-        item.seat.toString().includes(keyword) ||
-        item.prize.includes(keyword)
-      );
-
-      displayData(filtered);
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row["班級"] || ""}</td>
+          <td>${row["座號"] || ""}</td>
+          <td>${row["獎品"] || ""}</td>
+          <td>${row["時間"] || ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    // 頁面載入自動執行
-    window.onload = loadData;
+    // ✅ 搜尋功能
+    function searchRecords() {
+      const classQuery = document.getElementById("searchClass").value.trim();
+      const seatQuery = document.getElementById("searchSeat").value.trim();
+
+      let filtered = allData;
+
+      if (classQuery) {
+        filtered = filtered.filter(r => r["班級"] && r["班級"].includes(classQuery));
+      }
+      if (seatQuery) {
+        filtered = filtered.filter(r => r["座號"] && r["座號"].includes(seatQuery));
+      }
+
+      displayRecords(filtered);
+    }
   </script>
 </body>
 </html>

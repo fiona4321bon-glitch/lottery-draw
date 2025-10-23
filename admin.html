@@ -6,7 +6,7 @@
   <title>🎁 抽獎紀錄查詢系統 🎁</title>
   <style>
     body {
-      background-color: #f7f7f7;
+      background-color: #fffbea;
       font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
       padding: 20px;
@@ -16,11 +16,12 @@
     h1 {
       color: #ff9800;
       text-shadow: 1px 1px 3px #aaa;
+      margin-bottom: 20px;
     }
 
     input {
       padding: 10px;
-      width: 180px;
+      width: 200px;
       border: 1px solid #ccc;
       border-radius: 8px;
       margin: 5px;
@@ -28,36 +29,31 @@
     }
 
     button {
-      padding: 10px 20px;
-      margin: 10px 5px;
+      padding: 10px 18px;
+      margin: 8px 4px;
       border: none;
-      border-radius: 30px;
+      border-radius: 25px;
       color: white;
-      background-color: #2196f3;
       font-size: 16px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #1976d2;
-      transform: scale(1.05);
-    }
-
-    .home {
-      background-color: #4caf50;
-    }
-
-    .home:hover {
-      background-color: #388e3c;
-    }
+    .searchBtn { background-color: #4CAF50; }
+    .searchBtn:hover { background-color: #388E3C; }
+    .reloadBtn { background-color: #FF9800; }
+    .reloadBtn:hover { background-color: #F57C00; }
+    .homeBtn { background-color: #2196F3; }
+    .homeBtn:hover { background-color: #1976D2; }
 
     table {
       width: 90%;
-      margin: 20px auto;
+      margin: 25px auto;
       border-collapse: collapse;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
     }
 
     th, td {
@@ -68,12 +64,19 @@
     }
 
     th {
-      background-color: #ffcc80;
+      background-color: #ffeb3b;
+      color: #333;
+    }
+
+    td.clickable {
+      color: #1976d2;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     #status {
       margin-top: 15px;
-      color: #666;
+      color: #888;
     }
   </style>
 </head>
@@ -81,66 +84,90 @@
   <h1>🎁 抽獎紀錄查詢系統 🎁</h1>
 
   <div>
-    <input type="text" id="searchClass" placeholder="班級 (例:506)">
-    <input type="text" id="searchSeat" placeholder="座號 (例:12)">
-    <button onclick="searchRecords()">搜尋紀錄</button>
-    <button class="home" onclick="location.href='index.html'">返回首頁</button>
+    <input type="text" id="searchClass" placeholder="輸入班級" />
+    <input type="text" id="searchSeat" placeholder="輸入座號" />
+    <button class="searchBtn" onclick="searchRecords()">搜尋</button>
+    <button class="reloadBtn" onclick="loadData()">重新載入</button>
+    <button class="homeBtn" onclick="location.href='index.html'">返回首頁</button>
   </div>
 
-  <p id="status">載入中，請稍候...</p>
+  <p id="status">資料載入中...</p>
 
   <table id="recordTable">
     <thead>
       <tr>
+        <th>時間</th>
         <th>班級</th>
         <th>座號</th>
         <th>獎品</th>
-        <th>時間</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
-    // ✅ Google 試算表 CSV 連結（請保持一致）
     const sheetUrl = "https://docs.google.com/spreadsheets/d/19NKMepiPSPxJ9CdtRD27JIhSjs_BCsjJZfXc58NqoI0/gviz/tq?tqx=out:csv";
-
     let allData = [];
 
-    // ✅ 初始化讀取
-    fetch(sheetUrl)
-      .then(res => res.text())
-      .then(csv => {
+    async function loadData() {
+      document.getElementById("status").innerText = "資料載入中...";
+      try {
+        const res = await fetch(sheetUrl);
+        const csv = await res.text();
         allData = csvToJSON(csv);
-        document.getElementById("status").innerText = "✅ 資料載入完成，可搜尋學生紀錄。";
+        document.getElementById("status").innerText = `✅ 共載入 ${allData.length} 筆資料`;
         displayRecords(allData);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error("讀取錯誤：", err);
-        document.getElementById("status").innerText = "❌ 無法讀取 Google 試算表資料。請確認是否設為公開。";
-      });
+        document.getElementById("status").innerText = "❌ 無法讀取資料，請確認試算表權限。";
+      }
+    }
 
-    // ✅ CSV 轉 JSON
+    // ✅ CSV 轉 JSON，只保留前4欄
     function csvToJSON(csv) {
-      const lines = csv.split("\n");
+      const lines = csv.split("\n").filter(line => line.trim() !== "");
       const headers = lines[0].split(",");
       const result = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const obj = {};
-        const currentline = lines[i].split(",");
-        for (let j = 0; j < headers.length; j++) {
-          obj[headers[j].trim()] = currentline[j] ? currentline[j].trim() : "";
-        }
-        result.push(obj);
+        const row = lines[i].split(",");
+        if (row.length < 4) continue;
+        result.push({
+          "時間": cleanDate(row[0]),
+          "班級": row[1]?.trim(),
+          "座號": row[2]?.trim(),
+          "獎品": row[3]?.trim()
+        });
       }
       return result;
+    }
+
+    // ✅ 格式化時間
+    function cleanDate(dateStr) {
+      if (!dateStr) return "";
+      if (dateStr.includes("Date(")) return convertDateString(dateStr);
+      return dateStr;
+    }
+
+    function convertDateString(dateStr) {
+      try {
+        const match = dateStr.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)/);
+        if (match) {
+          const [_, y, m, d, h, min, sec] = match.map(Number);
+          const date = new Date(y, m - 1, d, h, min, sec);
+          return date.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
+        }
+        return dateStr;
+      } catch {
+        return dateStr;
+      }
     }
 
     // ✅ 顯示紀錄
     function displayRecords(data) {
       const tbody = document.querySelector("#recordTable tbody");
       tbody.innerHTML = "";
+
       if (!data.length) {
         tbody.innerHTML = `<tr><td colspan="4">查無資料</td></tr>`;
         return;
@@ -149,10 +176,10 @@
       data.forEach(row => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row["班級"] || ""}</td>
-          <td>${row["座號"] || ""}</td>
-          <td>${row["獎品"] || ""}</td>
           <td>${row["時間"] || ""}</td>
+          <td>${row["班級"] || ""}</td>
+          <td class="clickable" onclick="filterBySeat('${row["座號"]}')">${row["座號"] || ""}</td>
+          <td>${row["獎品"] || ""}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -160,20 +187,25 @@
 
     // ✅ 搜尋功能
     function searchRecords() {
-      const classQuery = document.getElementById("searchClass").value.trim();
-      const seatQuery = document.getElementById("searchSeat").value.trim();
-
+      const c = document.getElementById("searchClass").value.trim();
+      const s = document.getElementById("searchSeat").value.trim();
       let filtered = allData;
 
-      if (classQuery) {
-        filtered = filtered.filter(r => r["班級"] && r["班級"].includes(classQuery));
-      }
-      if (seatQuery) {
-        filtered = filtered.filter(r => r["座號"] && r["座號"].includes(seatQuery));
-      }
+      if (c) filtered = filtered.filter(r => r["班級"] && r["班級"].includes(c));
+      if (s) filtered = filtered.filter(r => r["座號"] && r["座號"].includes(s));
 
       displayRecords(filtered);
+      document.getElementById("status").innerText = `🔍 找到 ${filtered.length} 筆符合資料`;
     }
+
+    // ✅ 點擊座號快速篩選
+    function filterBySeat(seat) {
+      const filtered = allData.filter(r => r["座號"] === seat);
+      displayRecords(filtered);
+      document.getElementById("status").innerText = `📘 顯示座號 ${seat} 的所有紀錄（${filtered.length} 筆）`;
+    }
+
+    loadData();
   </script>
 </body>
 </html>

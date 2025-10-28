@@ -93,24 +93,24 @@
     const FORM_URL =
       "https://docs.google.com/forms/d/e/1FAIpQLSdY56-MpgXPSRBovznmZb-phQwWloZ_tf51KiPLo7Qc1cPgpg/formResponse";
 
-    // ✅ 目前機率設定（總和 = 1.00）
+    // ✅ 機率設定（加大差距 + 謝謝惠顧提升一階）
     const prizes = [
-      { name: "自動鉛筆一枝", prob: 0.18, img: "images/pencil.jpg" },
-      { name: "刺青貼紙一張", prob: 0.12, img: "images/tattoo.jpg" },
-      { name: "花盆一個", prob: 0.08, img: "images/flowerpot.jpg" },
+      { name: "自動鉛筆一枝", prob: 0.25, img: "images/pencil.jpg" },
+      { name: "刺青貼紙一張", prob: 0.15, img: "images/tattoo.jpg" },
       { name: "玩偶一個", prob: 0.10, img: "images/doll.jpg" },
       { name: "豆豆貼一個", prob: 0.08, img: "images/dot.jpg" },
       { name: "便利貼一個", prob: 0.08, img: "images/postit.jpg" },
-      { name: "多肉植物一盆", prob: 0.06, img: "images/succulent.jpg" },
       { name: "捏捏樂一個", prob: 0.07, img: "images/stressball.jpg" },
-      { name: "迷迭香一盆", prob: 0.06, img: "images/rosemary.jpg" },
-      { name: "巨大橡皮擦一顆", prob: 0.07, img: "images/eraser.jpg" },
-      { name: "鉛筆盒一個", prob: 0.04, img: "images/pencilcase.jpg" },
-      { name: "鹿角蕨一株", prob: 0.01, img: "images/fern.jpg" },
-      { name: "謝謝惠顧", prob: 0.05, img: "images/noimage.jpg" }
+      { name: "巨大橡皮擦一顆", prob: 0.06, img: "images/eraser.jpg" },
+      { name: "花盆一個", prob: 0.05, img: "images/flowerpot.jpg" },
+      { name: "多肉植物一盆", prob: 0.04, img: "images/succulent.jpg" },
+      { name: "迷迭香一盆", prob: 0.03, img: "images/rosemary.jpg" },
+      { name: "鉛筆盒一個", prob: 0.03, img: "images/pencilcase.jpg" },
+      { name: "謝謝惠顧", prob: 0.03, img: "images/noimage.jpg" },
+      { name: "鹿角蕨一株", prob: 0.02, img: "images/fern.jpg" }
     ];
 
-    // ✅ 抽獎機率函數
+    // ✅ 抽獎邏輯（加權隨機）
     function drawByProbability(prizes) {
       const totalProb = prizes.reduce((sum, p) => sum + p.prob, 0);
       const rand = Math.random() * totalProb;
